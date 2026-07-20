@@ -1,0 +1,289 @@
+<title>잇다 (Itda) — UI 목업 v1</title>
+<style>
+  :root{
+    --bg:#EFE9E1; --bg2:#E5DDD2; --ink:#33291F; --sub:#7A6E60; --line:#D8CFC2;
+    --coral:#D96B4A; --green:#3D5A4C; --card:#FFFFFF;
+    /* app tokens (phone screens stay in app-light deliberately) */
+    --a-bg:#FBF7F2; --a-ink:#33291F; --a-sub:#8A7C6C; --a-line:#EBE2D6;
+    --a-coral:#D96B4A; --a-coral-soft:#F6E3DA; --a-green:#3D5A4C; --a-green-soft:#E2EAE4;
+    --st-ok:#4E7D5B; --st-far:#C99A3C; --st-hurt:#B65454;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#221D17; --bg2:#2B251E; --ink:#EFE7DC; --sub:#A2937F; --line:#3C342A; --card:#2E2820; }
+  }
+  :root[data-theme="dark"]{ --bg:#221D17; --bg2:#2B251E; --ink:#EFE7DC; --sub:#A2937F; --line:#3C342A; --card:#2E2820; }
+  :root[data-theme="light"]{ --bg:#EFE9E1; --bg2:#E5DDD2; --ink:#33291F; --sub:#7A6E60; --line:#D8CFC2; --card:#FFFFFF; }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.55}
+  .serif{font-family:"Nanum Myeongjo","Apple SD Gothic Neo",Georgia,serif}
+
+  header{max-width:1240px;margin:0 auto;padding:56px 28px 8px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;color:var(--coral);font-weight:700}
+  h1{font-size:clamp(28px,4vw,44px);margin:10px 0 6px;text-wrap:balance;font-weight:800}
+  h1 .thread{color:var(--coral)}
+  header p{color:var(--sub);max-width:62ch;margin:6px 0 0}
+
+  .flow{max-width:1240px;margin:0 auto;padding:8px 28px 72px}
+  .stage{margin-top:44px}
+  .stage>h2{font-size:15px;font-weight:800;letter-spacing:.08em;color:var(--green);
+    display:flex;align-items:center;gap:12px;margin:0 0 4px}
+  :root[data-theme="dark"] .stage>h2, :root .dark-h2-fix{}
+  .stage>h2::after{content:"";flex:1;height:1px;background:var(--line)}
+  .stage>p{margin:0 0 20px;color:var(--sub);font-size:14px;max-width:70ch}
+  .rail{display:flex;gap:34px;overflow-x:auto;padding:10px 4px 26px;align-items:flex-start}
+
+  .shot{flex:0 0 auto;width:302px}
+  .phone{width:302px;height:640px;background:var(--a-bg);border-radius:40px;
+    border:7px solid #241F19;box-shadow:0 24px 48px rgba(40,28,16,.22);
+    overflow:hidden;position:relative;color:var(--a-ink)}
+  .notch{height:24px;display:flex;justify-content:center;align-items:flex-end}
+  .notch i{width:86px;height:16px;background:#241F19;border-radius:0 0 12px 12px}
+  .cap{margin-top:14px;padding:0 4px}
+  .cap b{font-size:14px}
+  .cap span{display:block;font-size:12.5px;color:var(--sub);margin-top:3px;max-width:38ch}
+
+  /* ---------- app pieces ---------- */
+  .scr{padding:14px 18px 0;height:calc(100% - 24px);display:flex;flex-direction:column;gap:0}
+  .hello{font-size:13px;color:var(--a-sub);margin-top:8px}
+  .big{font-size:21px;font-weight:800;line-height:1.35;margin:2px 0 14px;text-wrap:balance}
+  .qbig{font-size:23px;font-weight:800;line-height:1.4;margin:26px 0 6px;text-wrap:balance}
+  .qsub{font-size:13px;color:var(--a-sub);margin:0 0 18px}
+
+  .hero{background:#fff;border:1px solid var(--a-line);border-radius:22px;padding:18px;box-shadow:0 8px 22px rgba(70,50,30,.07)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+  .pill.far{background:#F7EDD8;color:#8A6A1E}
+  .pill.hurt{background:#F5E0E0;color:#8E3B3B}
+  .pill.ok{background:var(--a-green-soft);color:var(--a-green)}
+  .who{display:flex;gap:12px;align-items:center;margin:10px 0 4px}
+  .ava{width:46px;height:46px;border-radius:50%;background:var(--a-green);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .ava.coral{background:var(--a-coral)}
+  .who b{font-size:16px}
+  .who small{display:block;color:var(--a-sub);font-size:12px;margin-top:1px}
+  .mem{font-size:13px;color:var(--a-sub);background:var(--a-bg);border-radius:12px;padding:9px 12px;margin:10px 0 14px}
+  .mem em{font-style:normal;color:var(--a-coral);font-weight:700}
+  .cta{display:block;width:100%;text-align:center;background:var(--a-coral);color:#fff;border:0;
+    font-weight:800;font-size:15px;padding:14px 0;border-radius:14px}
+  .cta.ghost{background:transparent;color:var(--a-sub);font-weight:600;font-size:13px;padding:10px 0}
+  .cta.green{background:var(--a-green)}
+  .mini{background:#fff;border:1px solid var(--a-line);border-radius:16px;padding:12px 14px;margin-top:12px;
+    display:flex;justify-content:space-between;align-items:center;font-size:13px}
+  .mini b{font-size:13px}
+  .mini small{display:block;color:var(--a-sub);font-size:11.5px;margin-top:2px}
+  .dot3{display:flex;gap:5px}
+  .dot3 i{width:7px;height:7px;border-radius:50%;background:var(--a-line)}
+  .dot3 i.on{background:var(--a-coral)}
+  .tabbar{margin-top:auto;border-top:1px solid var(--a-line);display:flex;padding:10px 6px 22px;background:#fff}
+  .tabbar div{flex:1;text-align:center;font-size:11px;color:var(--a-sub)}
+  .tabbar div.on{color:var(--a-coral);font-weight:800}
+  .tabbar div::before{content:"";display:block;width:20px;height:20px;margin:0 auto 3px;border-radius:6px;background:var(--a-line)}
+  .tabbar div.on::before{background:var(--a-coral-soft);outline:2px solid var(--a-coral)}
+
+  .opt{display:flex;align-items:center;gap:13px;background:#fff;border:1.5px solid var(--a-line);
+    border-radius:18px;padding:16px;margin-bottom:12px}
+  .opt i{width:14px;height:14px;border-radius:50%;flex:0 0 auto}
+  .opt b{font-size:15px}
+  .opt small{display:block;font-size:12px;color:var(--a-sub);margin-top:2px}
+  .opt.sel{border-color:var(--st-far);background:#FEFBF3;box-shadow:0 6px 16px rgba(160,120,40,.10)}
+  .steps{display:flex;gap:6px;margin-top:14px}
+  .steps i{height:4px;flex:1;border-radius:2px;background:var(--a-line)}
+  .steps i.on{background:var(--a-coral)}
+
+  .grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .g{background:#fff;border:1px solid var(--a-line);border-radius:16px;padding:13px 8px;text-align:center;font-size:12px;font-weight:600}
+  .g span{display:block;font-size:20px;margin-bottom:5px}
+  .g.sel{border:1.5px solid var(--a-coral);background:var(--a-coral-soft)}
+
+  .boost{margin:20px 0 0;background:linear-gradient(160deg,#42604F,#2E463B);border-radius:24px;color:#F2EEE6;
+    padding:26px 22px;min-height:390px;display:flex;flex-direction:column}
+  .boost .tag{font-size:11px;letter-spacing:.14em;color:#CBBFA4;font-weight:700}
+  .boost h3{font-size:21px;line-height:1.5;margin:14px 0 10px;font-weight:800;text-wrap:balance}
+  .boost .stat{margin-top:auto;background:rgba(255,255,255,.09);border-radius:16px;padding:14px 16px;font-size:13px}
+  .boost .stat b{font-size:24px;color:#F0A583;font-variant-numeric:tabular-nums}
+  .boost .src{font-size:10.5px;color:#AFC2B4;margin-top:10px}
+  .swipe{display:flex;gap:5px;justify-content:center;margin:14px 0 4px}
+  .swipe i{width:6px;height:6px;border-radius:50%;background:var(--a-line)}
+  .swipe i.on{background:var(--a-coral)}
+
+  .tabs{display:flex;gap:8px;margin:4px 0 12px}
+  .tabs span{font-size:12px;padding:7px 12px;border-radius:99px;background:#fff;border:1px solid var(--a-line);color:var(--a-sub)}
+  .tabs span.on{background:var(--a-green);border-color:var(--a-green);color:#fff;font-weight:700}
+  .draft{background:#fff;border:1px solid var(--a-line);border-radius:18px;padding:16px;font-size:14px;line-height:1.7;min-height:170px}
+  .draft mark{background:var(--a-coral-soft);color:var(--a-coral);font-weight:700;padding:1px 4px;border-radius:5px}
+  .aiRow{display:flex;justify-content:flex-end;margin:10px 0 14px}
+  .aiRow button{border:1px solid var(--a-line);background:#fff;color:var(--a-green);font-size:12px;font-weight:700;border-radius:99px;padding:7px 12px}
+
+  .chat{display:flex;flex-direction:column;gap:10px;padding-top:8px;flex:1;overflow:hidden}
+  .bub{max-width:82%;padding:11px 14px;border-radius:16px;font-size:13.5px;line-height:1.6}
+  .bub.ai{background:#fff;border:1px solid var(--a-line);border-bottom-left-radius:6px}
+  .bub.me{background:var(--a-coral);color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+  .bub.b{background:var(--a-green-soft);border-bottom-left-radius:6px}
+  .bub.sys{align-self:center;background:transparent;border:1px dashed var(--a-line);color:var(--a-sub);
+    font-size:12px;text-align:center;max-width:92%;border-radius:14px}
+  .chips{display:flex;gap:6px;margin:10px 0 2px}
+  .chips span{font-size:10.5px;padding:4px 9px;border-radius:99px;background:#fff;border:1px solid var(--a-line);color:var(--a-sub)}
+  .chips span.on{background:var(--a-green);color:#fff;border-color:var(--a-green);font-weight:700}
+  .notice{font-size:11px;color:var(--a-sub);background:#fff;border:1px solid var(--a-line);border-radius:10px;padding:8px 10px;text-align:center;margin-top:8px}
+  .rest{align-self:center;font-size:12px;font-weight:700;color:var(--a-green);border:1.5px solid var(--a-green);
+    border-radius:99px;padding:7px 14px;background:#fff}
+  .inbar{margin-top:auto;display:flex;gap:8px;padding:10px 0 20px}
+  .inbar i{flex:1;background:#fff;border:1px solid var(--a-line);border-radius:99px;height:38px}
+  .inbar b{width:38px;height:38px;border-radius:50%;background:var(--a-coral);color:#fff;display:flex;align-items:center;justify-content:center}
+
+  .thread-svg{display:block;margin:-6px auto -18px;opacity:.6}
+  footer{max-width:1240px;margin:0 auto;padding:0 28px 60px;color:var(--sub);font-size:12.5px}
+  @media (prefers-reduced-motion: no-preference){
+    .shot{animation:rise .5s ease both}
+    @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .shot:nth-child(2){animation-delay:.08s}.shot:nth-child(3){animation-delay:.16s}
+  }
+</style>
+
+<header>
+  <div class="eyebrow">ITDA · UI MOCKUP V1 · 2026-07-20</div>
+  <h1>잇다 <span class="thread">—</span> 화면 설계 목업</h1>
+  <p>웜 미니멀리즘 · 한 화면 한 행동 · 실(thread) 모티프. 폰 프레임 안이 실제 앱 스타일 스펙이며,
+     확정 시 이 토큰(색·타입·간격)을 그대로 React Native 테마로 옮깁니다. 문서: docs/08-화면설계.md</p>
+</header>
+
+<div class="flow">
+
+  <section class="stage">
+    <h2>MVP 루프 — 용기 → 연락 → 기록</h2>
+    <p>홈은 목록이 아니라 "오늘의 한 사람"에 집중합니다. 등록은 한 화면 한 질문, 부스터는 연구 근거를 카피로 씁니다.</p>
+    <div class="rail">
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="hello">7월 20일 일요일</div>
+          <div class="big">오늘, 한 사람만<br>이어볼까요?</div>
+          <div class="hero">
+            <span class="pill far">멀어진 관계 · 3년</span>
+            <div class="who"><div class="ava">지훈</div><div><b>김지훈</b><small>고등학교 친구 · 마지막 연락 2023년</small></div></div>
+            <div class="mem">🧳 <em>부산 여행 · 2016</em> — "밤바다에서 라면 먹던 날"</div>
+            <button class="cta">용기 내보기</button>
+            <button class="cta ghost">다음에 할게요</button>
+          </div>
+          <div class="mini"><div><b>진행 중 미션</b><small>어머니 · 워밍업 완료</small></div><div class="dot3"><i class="on"></i><i class="on"></i><i></i></div></div>
+          <div class="mini"><div><b>다가오는 날</b><small>수진 생일 · D-6</small></div></div>
+          <div class="tabbar"><div class="on">홈</div><div>내 사람들</div><div>나</div></div>
+        </div>
+      </div>
+      <div class="cap"><b>S1 · 홈</b><span>선택 마비 방지 — 추천 1명 + 추억 1줄이 연락의 '구실'을 만들어 줌</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="qbig">지훈 님과 지금<br>어떤 상태인가요?</div>
+          <p class="qsub">상태에 따라 잇다가 다른 여정을 준비해요.</p>
+          <div class="opt"><i style="background:var(--st-ok)"></i><div><b>잘 지내요</b><small>연락을 이어가도록 도와드릴게요</small></div></div>
+          <div class="opt sel"><i style="background:var(--st-far)"></i><div><b>멀어졌어요</b><small>다시 연락할 용기를 준비해요</small></div></div>
+          <div class="opt"><i style="background:var(--st-hurt)"></i><div><b>마음이 상했어요</b><small>천천히, 회복의 여정부터 시작해요</small></div></div>
+          <div style="margin-top:auto;padding-bottom:22px">
+            <button class="cta green">다음</button>
+            <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>S3 · 사람 등록 (3/4)</b><span>한 화면 한 질문. 4단계는 안전 확인 — 위험 관계는 재연결 대신 보호로 분기</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="qbig">어떤 추억인가요?</div>
+          <p class="qsub">고르기만 하세요. 쓰는 건 마지막에 한 줄이면 충분해요.</p>
+          <div class="grid9">
+            <div class="g sel"><span>🧳</span>함께한 여행</div>
+            <div class="g"><span>🏫</span>학창 시절</div>
+            <div class="g"><span>🍜</span>같이 먹던 것</div>
+            <div class="g"><span>😂</span>웃었던 일</div>
+            <div class="g"><span>🤝</span>도와준 일</div>
+            <div class="g"><span>🏆</span>함께 이룬 것</div>
+            <div class="g"><span>☕</span>사소한 일상</div>
+            <div class="g"><span>🎁</span>선물</div>
+            <div class="g"><span>✏️</span>직접 입력</div>
+          </div>
+          <div style="margin-top:auto;padding-bottom:22px">
+            <button class="cta">다음 — 어떤 마음이었나요?</button>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>S5 · 추억 기록</b><span>전부 탭 선택형 → 입력 마찰 최소화. 완료 시 실 매듭 애니메이션</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="chips"><span class="on">용기</span><span>초안</span><span>보내기</span><span>기록</span></div>
+          <div class="boost">
+            <div class="tag">연구가 말해줘요 · 2/3</div>
+            <h3 class="serif">연락받은 사람은,<br>보낸 사람 생각보다<br>훨씬 반가워했어요.</h3>
+            <div class="stat">워밍업 연습을 한 사람들은<br>실제 연락 실행률이 <b>31% → 53%</b><div class="src">Aknin &amp; Sandstrom (2024) · Nature Comm. Psychol. / Liu et al. (2023) · JPSP</div></div>
+          </div>
+          <div class="swipe"><i></i><i class="on"></i><i></i></div>
+          <div style="padding-bottom:22px"><button class="cta">다음 카드</button></div>
+        </div>
+      </div>
+      <div class="cap"><b>S6b · 용기 부스터</b><span>근거 기반 넛지 2장 + 내 추억 카드 1장. 감성 카피만 명조 세리프</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="chips"><span>용기</span><span class="on">초안</span><span>보내기</span><span>기록</span></div>
+          <div class="qbig" style="font-size:19px;margin-top:14px">지훈 님께 보낼 첫 마디</div>
+          <div class="tabs"><span>가벼운 안부</span><span class="on">추억 소환</span><span>솔직하게</span></div>
+          <div class="draft">지훈아, 오랜만이다.<br>갑자기 <mark>부산에서 밤바다 보면서 라면 먹던 거</mark> 생각나서 연락해봤어. 잘 지내지?<br><br>문득 네 생각이 나더라. 언제 밥 한번 먹자.</div>
+          <div class="aiRow"><button>✨ AI로 다듬기</button></div>
+          <div style="margin-top:auto;padding-bottom:22px">
+            <button class="cta">복사하고 카카오톡 열기</button>
+            <button class="cta ghost">문자로 보낼게요</button>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>S6c · 초안 작성</b><span>전송 버튼은 없음 — 보내는 행위는 항상 사용자의 것 (결정로그 #9)</span></div></div>
+
+    </div>
+  </section>
+
+  <section class="stage">
+    <h2>화해 브리지 — 개별 상담 → 준비 확인 → 함께 대화 (Phase 2)</h2>
+    <p>바로 같은 방에 넣지 않습니다. 각자 AI와 마음을 정리하고, 준비되면 AI가 중재하는 합동방이 열립니다.</p>
+    <div class="rail">
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="chips"><span class="on">마음 정리</span><span>준비 확인</span><span>함께 대화</span></div>
+          <div class="notice">저는 상담사가 아닌, 대화를 돕는 조력자예요. 위기 상황에는 전문기관을 안내해 드려요.</div>
+          <div class="chat">
+            <div class="bub ai">언니에게 서운했던 순간을 하나만 떠올려 볼까요? 판단하지 않고 들을게요.</div>
+            <div class="bub me">아버지 간병을 나만 하는 것처럼 됐을 때… 언니는 바쁘다는 말만 했어요.</div>
+            <div class="bub ai">그때 "혼자 남겨졌다"고 느끼셨군요. 그 마음이 충분히 이해돼요. 혹시 언니에게 그 마음을 말로 전한 적이 있었을까요?</div>
+            <div class="bub me">아니요… 알아주길 바라기만 했던 것 같아요.</div>
+          </div>
+          <div class="inbar"><i></i><b>↑</b></div>
+        </div>
+      </div>
+      <div class="cap"><b>S7 · 개별 AI 상담</b><span>감정 타당화 → 사건/해석 분리 → 관점 조망 → 내 몫 찾기 (REACH·NVC 기반)</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="notch"><i></i></div>
+        <div class="scr">
+          <div class="chips"><span class="on">마음 정리</span><span class="on">준비 확인</span><span class="on">함께 대화</span></div>
+          <div class="chat">
+            <div class="bub sys">잇다가 함께해요 · 서로의 이야기를 끝까지 듣기로 약속했어요</div>
+            <div class="bub ai">두 분 모두 용기 내주셔서 감사해요. 먼저 은정 님이 정리한 마음을 나눌게요. 미영 님은 끝까지 들은 뒤, 들은 대로 말씀해 주세요.</div>
+            <div class="bub me">간병을 혼자 맡으면서, 버림받은 기분이었어. 언니가 미워서가 아니라… 외로웠어.</div>
+            <div class="bub b">네가 그렇게까지 힘든 줄 몰랐어. "바쁘다"는 말이 그렇게 들렸을 거라고는 생각 못 했어.</div>
+            <div class="bub ai">미영 님, 방금 들으신 은정 님의 마음을 한 문장으로 옮겨보면 어떻게 될까요?</div>
+            <div class="rest">☕ 잠시 쉬어가기</div>
+          </div>
+          <div class="inbar"><i></i><b>↑</b></div>
+        </div>
+      </div>
+      <div class="cap"><b>S8 · 합동방</b><span>AI는 발언권 정리·재번역·균형 유지. 격화 시 개입→냉각(분리)→종료 권고 3단계</span></div></div>
+
+    </div>
+  </section>
+</div>
+
+<footer>
+  잇다(Itda) · 화면 설계 v1 — 상세 스펙은 docs/08-화면설계.md, 중재 설계는 docs/07-AI중재-설계.md 참고.
+  폰 프레임 안 스타일이 앱 디자인 토큰의 원본입니다.
+</footer>
