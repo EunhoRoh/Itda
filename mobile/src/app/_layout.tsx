@@ -14,6 +14,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="mission/[personId]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="person/new" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
   );

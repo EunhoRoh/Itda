@@ -19,3 +19,20 @@ export async function apiGet<T>(path: string): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
+export async function apiSend<T>(
+  path: string,
+  method: 'POST' | 'PATCH',
+  body?: unknown,
+): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const data = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(data?.message ?? `${method} ${path} 실패 (${res.status})`);
+  }
+  return res.json() as Promise<T>;
+}

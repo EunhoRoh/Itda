@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,8 +29,14 @@ export default function PeopleScreen() {
   const theme = useTheme();
   const scheme = useColorScheme();
   const statusColors = StatusColors[scheme === 'dark' ? 'dark' : 'light'];
-  const { status, people } = usePeople();
+  const { status, people, reload } = usePeople();
   const [filter, setFilter] = useState<RelationStatus | 'ALL'>('ALL');
+
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
 
   const filtered = useMemo(
     () => (filter === 'ALL' ? people : people.filter((p) => p.status === filter)),
@@ -40,7 +47,20 @@ export default function PeopleScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <ThemedText type="subtitle">내 사람들</ThemedText>
+          <View style={styles.titleRow}>
+            <ThemedText type="subtitle">내 사람들</ThemedText>
+            <Pressable
+              onPress={() => router.push('/person/new')}
+              style={({ pressed }) => [
+                styles.addBtn,
+                { backgroundColor: theme.coral },
+                pressed && styles.pressed,
+              ]}>
+              <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                + 사람 잇기
+              </ThemedText>
+            </Pressable>
+          </View>
 
           <View style={styles.filterRow}>
             {FILTERS.map((f) => {
@@ -111,6 +131,16 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     paddingTop: Platform.select({ web: Spacing.six, default: Spacing.three }),
     paddingBottom: BottomTabInset + Spacing.four,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  addBtn: {
+    borderRadius: Radius.chip,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
   },
   filterRow: {
     flexDirection: 'row',
