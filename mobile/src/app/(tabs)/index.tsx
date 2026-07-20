@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { fetchActiveMissions, type Mission } from '@/api/missions';
 import { fetchMemories, type Memory, type Person } from '@/api/people';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -76,11 +78,27 @@ export default function HomeScreen() {
     [people],
   );
 
+  const [activeMissions, setActiveMissions] = useState<Mission[]>([]);
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+      fetchActiveMissions()
+        .then(setActiveMissions)
+        .catch(() => setActiveMissions([]));
+    }, [reload]),
+  );
+
+  const stepLabel: Record<Mission['step'], string> = {
+    WARMUP: '워밍업',
+    BOOSTER: '용기 채우는 중',
+    DRAFT: '초안 쓰는 중',
+    SENT: '답장 기다리는 중',
+    DONE: '완료',
+  };
+
   const onCourage = () => {
-    Alert.alert(
-      '용기 내보기',
-      '재연락 미션(워밍업 → 용기 부스터 → 초안)은 다음 단계에서 열려요.',
-    );
+    if (hero)
+      router.push({ pathname: '/mission/[personId]', params: { personId: String(hero.id) } });
   };
 
   return (
@@ -186,6 +204,31 @@ export default function HomeScreen() {
             </ThemedView>
           )}
 
+          {activeMissions.map((m) => (
+            <Pressable
+              key={m.id}
+              onPress={() =>
+                router.push({
+                  pathname: '/mission/[personId]',
+                  params: { personId: String(m.personId) },
+                })
+              }>
+              <ThemedView
+                type="backgroundElement"
+                style={[styles.missionCard, { borderColor: theme.border }]}>
+                <View style={styles.missionText}>
+                  <ThemedText type="smallBold">진행 중 미션 · {m.personNickname}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {stepLabel[m.step]}
+                  </ThemedText>
+                </View>
+                <ThemedText type="smallBold" style={{ color: theme.coral }}>
+                  이어가기 →
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          ))}
+
           {people.length > 0 && (
             <View style={styles.countRow}>
               {(['CONNECTED', 'DRIFTED', 'ESTRANGED'] as const).map((s) => (
@@ -274,6 +317,17 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  missionCard: {
+    borderRadius: Radius.button,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: Spacing.three,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  missionText: {
+    flex: 1,
+    gap: Spacing.half,
   },
   countRow: {
     flexDirection: 'row',

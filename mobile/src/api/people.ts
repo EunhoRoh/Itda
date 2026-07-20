@@ -40,6 +40,10 @@ export function fetchPeople(status?: RelationStatus) {
   return apiGet<Person[]>(`/api/people${query}`);
 }
 
+export function fetchPerson(id: number) {
+  return apiGet<Person>(`/api/people/${id}`);
+}
+
 export function fetchMemories(personId: number) {
   return apiGet<Memory[]>(`/api/people/${personId}/memories`);
 }
