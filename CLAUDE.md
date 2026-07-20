@@ -21,8 +21,8 @@
 - N+1 금지: 연관관계 LAZY, 목록은 프로젝션/fetch join
 
 ## 실행
-- backend: `docker compose up -d` (Postgres, 포트 **5433** — sealo와 분리) + `./gradlew bootRun`
-- mobile: `npx expo start`
+- backend: `docker compose up -d` (Postgres **5433**) + `./gradlew bootRun` (API **8090**) — sealo(5432/8080)와 포트 분리
+- mobile: `npx expo start --port 8082` (sealo가 8081 사용)
 
 ## 검증 (커밋 전 필수)
 - backend: `./gradlew build` (테스트 포함, H2 인메모리라 Docker 불필요)
