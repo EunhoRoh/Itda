@@ -108,6 +108,16 @@ export default function PeopleScreen() {
                   {!p.reconnectAllowed && ' · 보호 모드'}
                 </ThemedText>
               </View>
+              <Pressable
+                onPress={() =>
+                  router.push({ pathname: '/memory/new', params: { personId: String(p.id) } })
+                }
+                hitSlop={8}
+                style={({ pressed }) => [styles.memoryBtn, pressed && styles.pressed]}>
+                <ThemedText type="small" style={{ color: theme.coral, fontSize: 12 }}>
+                  + 추억
+                </ThemedText>
+              </Pressable>
             </ThemedView>
           ))}
         </ScrollView>
@@ -162,8 +172,13 @@ const styles = StyleSheet.create({
     width: 4,
   },
   personBody: {
+    flex: 1,
     padding: Spacing.three,
     gap: Spacing.half,
+  },
+  memoryBtn: {
+    paddingHorizontal: Spacing.three,
+    alignSelf: 'center',
   },
   personName: {
     fontSize: 16,
