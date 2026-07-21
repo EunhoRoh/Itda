@@ -1,6 +1,7 @@
+import * as Contacts from 'expo-contacts';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { createPerson, type RelationStatus, type RelationType } from '@/api/people';
@@ -30,6 +31,19 @@ export default function NewPersonScreen() {
   const [status, setStatus] = useState<RelationStatus | null>(null);
   const [safetyConcern, setSafetyConcern] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // 시스템 연락처 피커 — 전체 목록 접근 없이 1명만 선택 (결정로그 #4: 선택적 불러오기)
+  const pickFromContacts = async () => {
+    try {
+      const contact = await Contacts.presentContactPickerAsync();
+      if (contact?.name) setNickname(contact.name);
+    } catch (e) {
+      Alert.alert(
+        '연락처를 열지 못했어요',
+        e instanceof Error ? e.message : '직접 입력으로 진행해 주세요',
+      );
+    }
+  };
 
   const canNext =
     (step === 0 && nickname.trim().length > 0) ||
@@ -96,6 +110,25 @@ export default function NewPersonScreen() {
                   },
                 ]}
               />
+              {Platform.OS !== 'web' && (
+                <>
+                  <Pressable
+                    onPress={pickFromContacts}
+                    style={({ pressed }) => [
+                      styles.contactBtn,
+                      { borderColor: theme.green },
+                      pressed && styles.pressed,
+                    ]}>
+                    <ThemedText type="smallBold" style={{ color: theme.green }}>
+                      📇 연락처에서 고르기
+                    </ThemedText>
+                  </Pressable>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.contactNote}>
+                    시스템 선택창에서 한 명만 고를 수 있어요. 연락처 전체를 읽거나 서버로 보내지
+                    않아요.
+                  </ThemedText>
+                </>
+              )}
             </>
           )}
 
@@ -280,6 +313,16 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     padding: Spacing.three,
     fontSize: 17,
+  },
+  contactBtn: {
+    borderRadius: Radius.button,
+    borderWidth: 1.5,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
+  },
+  contactNote: {
+    fontSize: 12,
+    textAlign: 'center',
   },
   typeGrid: {
     flexDirection: 'row',

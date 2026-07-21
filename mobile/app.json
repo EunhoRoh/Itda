@@ -24,6 +24,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "다시 잇고 싶은 사람을 연락처에서 선택해 불러오기 위해서만 사용해요. 연락처 전체를 수집하거나 서버로 보내지 않아요."
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

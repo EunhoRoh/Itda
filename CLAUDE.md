@@ -15,6 +15,7 @@
 
 ## 작업 규칙
 - **결정이 생기면** → docs/03-결정로그.md에 추가
+- **기능 아이디어가 나오거나 구현이 끝나면** → docs/09-백로그.md 갱신 (기획이 잊히지 않는 단일 관리 지점)
 - 관계·감정·갈등 기록은 최고 민감 정보 — 로그 출력 금지, 실명 대신 별칭 허용 유지
 - 스택: Spring Boot 4.1 + Java 21 (`backend/`, com.itda, domain/{기능} + global 구조), React Native Expo + TS (`mobile/`)
 - 색/간격: `mobile/src/constants/theme.ts` 토큰만. hex 하드코딩 금지 (원본: docs/assets/ui-mockup.html)
