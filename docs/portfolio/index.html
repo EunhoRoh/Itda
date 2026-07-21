@@ -1,0 +1,305 @@
+<title>잇다 (Itda) — 풀스택 사이드 프로젝트 포트폴리오</title>
+<style>
+  /* 인쇄·서류 제출을 고려해 라이트 단일 테마로 확정 (종이 문서 성격) */
+  :root{
+    --bg:#FBF7F2; --ink:#33291F; --sub:#8A7C6C; --line:#EBE2D6; --card:#FFFFFF;
+    --coral:#D96B4A; --coral-soft:#F6E3DA; --green:#3D5A4C; --green-soft:#E2EAE4;
+    --ok:#4E7D5B; --far:#C99A3C; --hurt:#B65454;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.6}
+  .serif{font-family:"Nanum Myeongjo","Apple SD Gothic Neo",Georgia,serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;font-weight:800;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .no{font-size:12px;color:var(--coral);letter-spacing:.15em;font-weight:700}
+  .lead{color:var(--sub);font-size:14.5px;max-width:72ch;margin:0 0 26px}
+
+  /* hero */
+  header{padding:72px 0 46px;border-bottom:1px solid var(--line)}
+  .brand{font-size:13px;letter-spacing:.2em;color:var(--coral);font-weight:800}
+  h1{font-size:clamp(30px,5vw,50px);margin:12px 0 8px;font-weight:800;line-height:1.25;text-wrap:balance}
+  h1 em{font-style:normal;color:var(--coral)}
+  .tagline{font-size:16px;color:var(--sub);max-width:64ch}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+  .badge.hot{background:var(--green);color:#fff;border-color:var(--green)}
+  .meta{margin-top:18px;font-size:13px;color:var(--sub)}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .stat b{display:block;font-size:30px;color:var(--coral);font-variant-numeric:tabular-nums;line-height:1.2}
+  .stat span{font-size:13px;color:var(--sub)}
+  .stat small{display:block;margin-top:8px;font-size:11px;color:var(--sub)}
+
+  /* phones */
+  .rail{display:flex;gap:26px;overflow-x:auto;padding:6px 2px 18px;align-items:flex-start}
+  .shot{flex:0 0 auto;width:250px}
+  .phone{width:250px;height:520px;background:var(--bg);border-radius:34px;border:6px solid #241F19;
+    box-shadow:0 18px 36px rgba(40,28,16,.18);overflow:hidden;position:relative}
+  .scr{padding:16px 14px;height:100%;display:flex;flex-direction:column;gap:9px;font-size:11.5px}
+  .cap{margin-top:12px;padding:0 2px}
+  .cap b{font-size:13px}
+  .cap span{display:block;font-size:12px;color:var(--sub);margin-top:2px}
+  .h-big{font-size:16px;font-weight:800;line-height:1.35}
+  .card-s{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:7px}
+  .pill{align-self:flex-start;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;background:#F7EDD8;color:#8A6A1E}
+  .who{display:flex;gap:8px;align-items:center}
+  .ava{width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px}
+  .who b{font-size:12px}
+  .who small{display:block;color:var(--sub);font-size:9.5px}
+  .mem{font-size:10px;color:var(--sub);background:var(--bg);border-radius:9px;padding:7px 8px}
+  .mem em{font-style:normal;color:var(--coral);font-weight:700}
+  .cta{background:var(--coral);color:#fff;text-align:center;font-weight:800;font-size:11px;padding:9px 0;border-radius:9px}
+  .cta.g{background:var(--green)}
+  .cta.o{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:700}
+  .ghosty{text-align:center;color:var(--sub);font-size:10px}
+  .mini{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 10px;font-size:10px;display:flex;justify-content:space-between;align-items:center}
+  .mini b{font-size:10px}
+  .mini i{font-style:normal;color:var(--coral);font-weight:700}
+  .cnt{display:flex;gap:6px}
+  .cnt div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;text-align:center;padding:7px 0;font-size:9.5px;color:var(--sub)}
+  .cnt b{display:block;font-size:12px;color:var(--ink)}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px}
+  .boost{background:linear-gradient(160deg,#42604F,#2E463B);border-radius:16px;color:#F2EEE6;padding:16px 14px;flex:1;display:flex;flex-direction:column}
+  .boost .tag{font-size:8.5px;letter-spacing:.13em;color:#CBBFA4;font-weight:700}
+  .boost h4{font-size:14px;line-height:1.55;margin:10px 0;font-weight:800}
+  .boost .st{margin-top:auto;background:rgba(255,255,255,.09);border-radius:11px;padding:9px 10px;font-size:9.5px}
+  .boost .st b{font-size:15px;color:#F0A583}
+  .chips{display:flex;gap:4px}
+  .chips span{font-size:8.5px;padding:3px 7px;border-radius:99px;background:var(--card);border:1px solid var(--line);color:var(--sub)}
+  .chips span.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:700}
+  .draft{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:10.5px;line-height:1.65;flex:1}
+  .draft mark{background:var(--coral-soft);color:var(--coral);font-weight:700;padding:0 3px;border-radius:4px}
+  .note-c{text-align:center;font-size:9px;color:var(--sub)}
+  .cyc{display:flex;gap:4px}
+  .cyc span{font-size:9px;padding:4px 8px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--sub)}
+  .cyc span.on{background:var(--green);color:#fff;border-color:var(--green)}
+  .tl{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px}
+  .tl b{font-size:10px}
+  .tl small{display:block;font-size:9px;color:var(--sub)}
+
+  /* architecture */
+  .arch{display:grid;gap:0;max-width:640px;margin:0 auto}
+  .abox{background:var(--card);border:1.5px solid var(--green);border-radius:16px;padding:16px 20px}
+  .abox h4{margin:0 0 4px;font-size:14px;color:var(--green)}
+  .abox p{margin:0;font-size:12.5px;color:var(--sub);line-height:1.7}
+  .alink{text-align:center;color:var(--sub);font-size:11px;padding:6px 0;position:relative}
+  .alink::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line);z-index:-1}
+  .alink span{background:var(--bg);padding:0 10px;font-weight:700}
+  .abox.db{border-color:var(--line);text-align:center}
+  .abox.db h4{color:var(--ink)}
+
+  /* decisions */
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .dec{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .dec h4{margin:0 0 8px;font-size:14.5px}
+  .dec h4::before{content:"↳ ";color:var(--coral)}
+  .dec p{margin:0;font-size:12.5px;color:var(--sub);line-height:1.75}
+  .dec p b{color:var(--ink)}
+
+  /* quality */
+  .qrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+  .q{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;font-size:12.5px;color:var(--sub)}
+  .q b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:4px}
+
+  /* relay */
+  .relay{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+  .rstep{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:12px}
+  .rstep b{display:block;font-size:12.5px;margin-bottom:4px;color:var(--green)}
+  .rstep span{color:var(--sub);font-size:11.5px;line-height:1.6}
+
+  footer{padding:40px 0 70px;color:var(--sub);font-size:12.5px}
+  footer a{color:var(--coral)}
+  .quote{border-left:3px solid var(--coral);padding:4px 0 4px 18px;margin:26px 0 0;color:var(--sub);font-size:14px;max-width:64ch}
+
+  @media print{
+    body{background:#fff}
+    .rail{flex-wrap:wrap;overflow:visible}
+    section{page-break-inside:avoid;border:none}
+    .phone{box-shadow:none}
+  }
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="brand">SIDE PROJECT · FULL-STACK · 2026</div>
+    <h1>잇다 <span class="serif" style="font-weight:400">—</span> 끊어진 관계를<br><em>다시 잇는</em> 앱</h1>
+    <p class="tagline">"연락하고 싶은데 못 하는" 심리적 병목을 심리학 RCT 근거로 풀어낸 관계 회복 서비스.
+      리서치 → 기획 → 설계 → 풀스택 구현 → 검증까지 전 과정을 1인으로 수행했습니다.</p>
+    <div class="badges">
+      <span class="badge hot">MVP 핵심 루프 구현 완료</span>
+      <span class="badge">Spring Boot 4.1 · Java 21</span>
+      <span class="badge">React Native (Expo SDK 57) · TypeScript</span>
+      <span class="badge">PostgreSQL · JPA</span>
+      <span class="badge">expo-notifications · expo-contacts</span>
+    </div>
+    <div class="meta">역할: 기획·리서치·백엔드·모바일 전부 (1인) · AI 페어 프로그래밍 활용, 의사결정은 결정로그 24건으로 직접 기록 · 저장소: github.com/EunhoRoh/Itda</div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2><span class="no">01</span> 근거 있는 문제 정의</h2>
+    <p class="lead">기능 아이디어가 아니라 논문에서 출발했습니다. 딥 리서치로 24개 소스에서 109개 주장을 추출하고
+      3인 교차 검증을 거쳐 24건을 확정한 뒤, 검증된 것만 제품에 반영했습니다.</p>
+    <div class="stats">
+      <div class="stat"><b>31% → 53%</b><span>3분 워밍업 연습 후 실제 재연락 실행률</span><small>Aknin &amp; Sandstrom (2024) · Nature Comm. Psychol. · N=194, d=0.46</small></div>
+      <div class="stat"><b>d = 0.32</b><span>수신자의 반가움이 발신자 예상을 초과 (독립 재현 성공)</span><small>Liu et al. (2023) · JPSP · 재현 n=742</small></div>
+      <div class="stat"><b>25+ RCT</b><span>REACH 용서 모델 — 셀프 워크북 형식도 효과 확인</span><small>Worthington · 메타분석 d≈0.6</small></div>
+      <div class="stat"><b>API 폐쇄</b><span>Meta·카카오 친구 API는 "같은 앱 사용자"만 반환 → 소셜 그래프 자동 수집 배제 결정</span><small>공식 개발자 문서 직접 검증</small></div>
+    </div>
+    <p class="quote serif">"연락을 못 하는 건 의지가 아니라 불안의 문제다 — 그렇다면 앱이 개입할 수 있다."</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="no">02</span> 실제 구현 화면</h2>
+    <p class="lead">아래는 목업이 아니라 동작하는 앱의 화면 구성입니다. 원칙: 한 화면 한 행동, 선택형 입력, 그리고 <b>전송 버튼 없음</b> — 보내는 순간은 언제나 사용자의 것.</p>
+    <div class="rail">
+
+      <div class="shot"><div class="phone"><div class="scr">
+        <div style="color:var(--sub);font-size:10px">7월 21일 화요일</div>
+        <div class="h-big">오늘, 한 사람만<br>이어볼까요?</div>
+        <div class="card-s">
+          <span class="pill">멀어진 관계 · 3년</span>
+          <div class="who"><div class="ava">지훈</div><div><b>김지훈</b><small>고등학교 친구 · 마지막 연락 2023년</small></div></div>
+          <div class="mem">🧳 <em>함께한 여행 · 2016</em> — "밤바다에서 라면 먹던 날"</div>
+          <div class="cta">용기 내보기</div>
+          <div class="ghosty">다음에 할게요</div>
+        </div>
+        <div class="mini"><div><b>진행 중 미션 · 어머니</b><br><span style="color:var(--sub)">답장 기다리는 중</span></div><i>이어가기 →</i></div>
+        <div class="cnt">
+          <div><span class="dot" style="background:var(--ok)"></span><b>1</b>이어진</div>
+          <div><span class="dot" style="background:var(--far)"></span><b>2</b>멀어진</div>
+          <div><span class="dot" style="background:var(--hurt)"></span><b>0</b>틀어진</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>홈 — 오늘의 한 사람</b><span>목록 대신 추천 1명. 추억 한 줄이 연락의 '구실'이 되어줌</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="scr">
+        <div class="chips"><span>✓ 워밍업</span><span class="on">용기</span><span>초안</span><span>기록</span></div>
+        <div class="boost">
+          <div class="tag">연구가 말해줘요 · 2/3</div>
+          <h4 class="serif">워밍업을 마친 사람의<br>53%가 실제로 연락했어요.<br>하지 않은 사람은 31%.</h4>
+          <div class="st">Aknin &amp; Sandstrom (2024)<br>Nature Communications Psychology</div>
+        </div>
+        <div class="cta">다음 카드</div>
+      </div></div>
+      <div class="cap"><b>미션 — 용기 부스터</b><span>근거 기반 넛지 2장 + "이 기억을 아는 사람은 둘뿐" 추억 카드 1장</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="scr">
+        <div class="chips"><span>✓ 워밍업</span><span>✓ 용기</span><span class="on">초안</span><span>기록</span></div>
+        <div class="h-big" style="font-size:14px">지훈 님께 보낼 첫 마디</div>
+        <div class="chips"><span>가벼운 안부</span><span class="on">추억 소환</span><span>솔직하게</span></div>
+        <div class="draft">지훈, 오랜만이야. 갑자기 <mark>밤바다에서 라면 먹던 날</mark> 생각나서 연락해봤어. 잘 지내고 있지? 언제 한번 보자.</div>
+        <div class="cta">복사하고 카카오톡 열기</div>
+        <div class="note-c">잇다에는 전송 버튼이 없어요.<br>보내는 순간은 당신의 것이니까요.</div>
+      </div></div>
+      <div class="cap"><b>미션 — 초안 작성</b><span>등록해둔 추억이 템플릿에 자동 삽입. 복사 24시간 뒤 "어떻게 됐나요?" 알림</span></div></div>
+
+      <div class="shot"><div class="phone"><div class="scr">
+        <div style="color:var(--sub);font-size:10px">← 뒤로</div>
+        <div class="who"><div class="ava" style="width:36px;height:36px">어머</div><div><b style="font-size:14px">어머니</b><small>가족 · 마지막 연락 5개월 전</small></div></div>
+        <div><b style="font-size:11px">연락 리마인더</b></div>
+        <div class="cyc"><span>없음</span><span>2주</span><span class="on">한 달</span><span>석 달</span></div>
+        <div class="note-c" style="text-align:left">"어머니 님과 이을 시간이에요"라고 알려드려요</div>
+        <div class="cta">용기 내보기</div>
+        <div><b style="font-size:11px">함께한 추억 1</b></div>
+        <div class="tl">🍜<div><b>같이 먹던 것 · 2024</b><small>"김장하고 수육 먹던 날" · 고마움</small></div></div>
+      </div></div>
+      <div class="cap"><b>관계 상세</b><span>주기 알림(로컬 푸시) + 추억 타임라인. 위험 관계는 보호 모드로 분기</span></div></div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="no">03</span> 아키텍처</h2>
+    <p class="lead">도메인 중심 계층 구조. 윤리 요구사항("위험 관계에 재연락을 권하지 않는다")을 프론트 문구가 아니라 백엔드 불변식으로 구현한 것이 특징입니다.</p>
+    <div class="arch">
+      <div class="abox">
+        <h4>mobile — React Native (Expo SDK 57) · TypeScript</h4>
+        <p>expo-router Stack+(tabs) · 화면 9개 · 디자인 토큰 시스템(라이트/다크) · 로컬 알림 리마인더 · 시스템 연락처 피커(권한 없이 1명씩)</p>
+      </div>
+      <div class="alink"><span>REST · CORS 분리 구성</span></div>
+      <div class="abox">
+        <h4>backend — Spring Boot 4.1 · Java 21</h4>
+        <p>도메인 3개: person / memory / mission(상태기계 WARMUP→BOOSTER→DRAFT→SENT→DONE) · REST API 11개 ·
+        안전 불변식: safetyConcern=true → 미션 생성 409 · OSIV off · default_batch_fetch_size=100 (N+1 완화)</p>
+      </div>
+      <div class="alink"><span>Spring Data JPA</span></div>
+      <div class="abox db">
+        <h4>PostgreSQL 16 (Docker Compose)</h4>
+        <p>그래프형 스키마(person–relationship)로 설계하되 그래프 DB는 규모·라이선스 근거로 도입 보류</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="no">04</span> 기술 의사결정 — 고민의 흔적</h2>
+    <p class="lead">모든 결정은 결정로그(24건)에 근거와 함께 기록했고, 번복된 결정도 지우지 않았습니다. 대표 6건:</p>
+    <div class="grid2">
+      <div class="dec"><h4>소셜 그래프 자동 수집을 버렸다</h4>
+        <p>Meta·카카오 친구 API가 <b>"같은 앱을 쓰는 친구"만 반환</b>함을 공식 문서로 검증. 신규 앱엔 빈 목록 →
+        연락처 선택 불러오기 + 직접 등록으로 전환. <b>제약 조사가 아키텍처를 결정한 사례.</b></p></div>
+      <div class="dec"><h4>그래프 DB를 안 썼다</h4>
+        <p>개인당 관계 수십~수백 명 → 재귀 CTE로 충분. Neo4j CE의 GPLv3 논쟁과 운영 비용까지 계산.
+        스키마만 그래프형으로 두어 <b>이관 비용을 미리 낮춤.</b></p></div>
+      <div class="dec"><h4>미션을 상태기계로</h4>
+        <p>단계 전이를 <b>enum과 엔티티에 캡슐화</b>(MissionStep.next, recordResult). 결과별 규칙 — 답장 오면
+        마지막 연락일 갱신, 무응답이면 열린 채 유지 — 을 도메인이 소유. 통합 테스트로 전이 전부 검증.</p></div>
+      <div class="dec"><h4>윤리를 서버 불변식으로</h4>
+        <p>안전 스크리닝에 걸린 관계는 <b>서버가 미션 생성을 409로 거부</b> — UI를 우회해도 뚫리지 않는다.
+        '용서≠재연결' 원칙으로 연락 없는 마음 정리도 동등한 성공 경로로 설계.</p></div>
+      <div class="dec"><h4>메신저를 만들지 않았다</h4>
+        <p>전송 버튼이 없다. 앱은 '보내기 전(용기·초안)'과 '보낸 후(기록·여정)'만 담당하고 전송은 카톡/문자로.
+        <b>메신저와 경쟁하지 않는 포지셔닝</b>이자 심리적 자기결정감 보존.</p></div>
+      <div class="dec"><h4>리마인더를 서버 푸시 없이</h4>
+        <p>MVP 단계에서 FCM·Redis 인프라 대신 <b>기기 로컬 알림</b> 채택. identifier 규칙으로 예약·취소 관리
+        ("아직 답 없어요"면 24h 팔로업 유지). 인프라 0개 추가로 기능 완성.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="no">05</span> 품질과 검증</h2>
+    <div class="qrow">
+      <div class="q"><b>통합 테스트 11건</b>MockMvc 기반 — 상태별 조회, 안전 차단(409), 미션 전이, 연락일 갱신, 주기 설정/해제</div>
+      <div class="q"><b>커밋 전 게이트</b>gradlew build(테스트 포함) + tsc --noEmit + 브라우저 E2E 시나리오(등록→추억→미션 완주→추천 교체 확인)</div>
+      <div class="q"><b>Boot 4 마이그레이션</b>스타터 재편(starter-webmvc), Jackson 3(tools.jackson), MockMvc 자동설정 이동을 직접 대응</div>
+      <div class="q"><b>문서 11종</b>리서치 보고서 · 결정로그 24건 · 기능 백로그 · AI 중재 설계 · 화면 설계 — 코드와 함께 버전 관리</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="no">06</span> 다음 단계 — AI 릴레이 중재 (설계 완료)</h2>
+    <p class="lead">갈등 당사자를 바로 같은 방에 넣지 않습니다. 전문 조정의 카우커스·셔틀 조정 기법을 AI로 구현하는 설계를 마쳤습니다.
+      안전은 프롬프트가 아니라 시스템이 보장 — AI의 [SAFETY]/[COOLDOWN] 제어 토큰을 서버가 파싱해 실제 분기를 실행합니다.</p>
+    <div class="relay">
+      <div class="rstep"><b>① 개별 AI 상담</b><span>감정 타당화 → 사건/해석 분리 → 관점 조망 (REACH·NVC 기반)</span></div>
+      <div class="rstep"><b>② 요약 본인 승인</b><span>AI 요약을 문장 단위로 공유 범위 선택 — 자동 전송 없음</span></div>
+      <div class="rstep"><b>③ 본인이 직접 초대</b><span>앱이 문구·링크만 생성, 전송은 사용자의 카톡으로</span></div>
+      <div class="rstep"><b>④ 상대 게스트 참여</b><span>가입 없이 웹으로 첫 상담 — 수신자 마찰 최소화</span></div>
+      <div class="rstep"><b>⑤ 왕복 릴레이 (3회 제한)</b><span>정제된 요약만 오감 → 마무리 / 합동방 / 마음 정리 3택</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b style="color:var(--ink)">잇다 (Itda)</b> · 풀스택 사이드 프로젝트 · 2026<br>
+    저장소: <a href="https://github.com/EunhoRoh/Itda">github.com/EunhoRoh/Itda</a> (기획 문서 11종 + 전체 소스)
+    · 이 페이지는 브라우저 인쇄로 PDF 제출용 변환이 가능합니다.
+  </div>
+</footer>
