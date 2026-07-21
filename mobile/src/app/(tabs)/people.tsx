@@ -99,7 +99,11 @@ export default function PeopleScreen() {
               type="backgroundElement"
               style={[styles.personCard, { borderColor: theme.border }]}>
               <View style={[styles.statusBar, { backgroundColor: statusColors[p.status] }]} />
-              <View style={styles.personBody}>
+              <Pressable
+                onPress={() =>
+                  router.push({ pathname: '/person/[id]', params: { id: String(p.id) } })
+                }
+                style={({ pressed }) => [styles.personBody, pressed && styles.pressed]}>
                 <ThemedText type="smallBold" style={styles.personName}>
                   {p.nickname}
                 </ThemedText>
@@ -107,7 +111,7 @@ export default function PeopleScreen() {
                   {RelationTypeLabels[p.relationType]} · {RelationStatusLabels[p.status]}
                   {!p.reconnectAllowed && ' · 보호 모드'}
                 </ThemedText>
-              </View>
+              </Pressable>
               <Pressable
                 onPress={() =>
                   router.push({ pathname: '/memory/new', params: { personId: String(p.id) } })

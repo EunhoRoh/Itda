@@ -20,7 +20,13 @@ import {
   type Mission,
   type MissionResult,
 } from '@/api/missions';
-import { fetchMemories, fetchPerson, type Memory, type Person } from '@/api/people';
+import {
+  changePersonStatus,
+  fetchMemories,
+  fetchPerson,
+  type Memory,
+  type Person,
+} from '@/api/people';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MemoryCategoryLabels } from '@/constants/labels';
@@ -61,6 +67,7 @@ export default function MissionScreen() {
   const [template, setTemplate] = useState<TemplateKey>('memory');
   const [draft, setDraft] = useState('');
   const [finishedResult, setFinishedResult] = useState<MissionResult | null>(null);
+  const [statusAnswered, setStatusAnswered] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -364,6 +371,42 @@ export default function MissionScreen() {
                     끊겼던 실이 다시 이어졌어요. 이 순간을 만든 건 연구도 잇다도 아니라, 용기를 낸
                     당신이에요.
                   </ThemedText>
+                  {person?.status === 'DRIFTED' && !statusAnswered && (
+                    <>
+                      <ThemedText type="smallBold">관계가 다시 이어진 느낌인가요?</ThemedText>
+                      <Pressable
+                        onPress={async () => {
+                          try {
+                            const updated = await changePersonStatus(person.id, 'CONNECTED');
+                            setPerson(updated);
+                          } catch {}
+                          setStatusAnswered(true);
+                        }}
+                        style={({ pressed }) => [
+                          styles.cta,
+                          { backgroundColor: theme.green },
+                          pressed && styles.pressed,
+                        ]}>
+                        <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                          네, 이어진 관계로 바꿀게요
+                        </ThemedText>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => setStatusAnswered(true)}
+                        style={({ pressed }) => [
+                          styles.cta,
+                          styles.outline,
+                          { borderColor: theme.border },
+                          pressed && styles.pressed,
+                        ]}>
+                        <ThemedText type="smallBold">아직은 천천히 갈게요</ThemedText>
+                      </Pressable>
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.centerNote}>
+                        한 번의 답장으로 모든 게 돌아오지 않아도 괜찮아요. 어느 쪽이든 잘하고
+                        있는 거예요.
+                      </ThemedText>
+                    </>
+                  )}
                 </>
               ) : finishedResult === 'NO_REPLY' ? (
                 <>

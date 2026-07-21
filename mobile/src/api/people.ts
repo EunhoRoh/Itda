@@ -57,6 +57,10 @@ export function createPerson(request: PersonRequest) {
   return apiSend<Person>('/api/people', 'POST', request);
 }
 
+export function changePersonStatus(id: number, status: RelationStatus) {
+  return apiSend<Person>(`/api/people/${id}/status?status=${status}`, 'PATCH');
+}
+
 export type MemoryRequest = {
   category: MemoryCategory;
   emotion?: EmotionTag;
