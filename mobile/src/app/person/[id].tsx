@@ -3,7 +3,14 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fetchMemories, fetchPerson, type Memory, type Person } from '@/api/people';
+import {
+  changeContactCycle,
+  fetchMemories,
+  fetchPerson,
+  type Memory,
+  type Person,
+} from '@/api/people';
+import { syncContactCycleReminder } from '@/notifications/reminders';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
@@ -33,6 +40,22 @@ export default function PersonDetailScreen() {
 
   const [person, setPerson] = useState<Person | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
+
+  const CYCLE_OPTIONS: { days: number | null; label: string }[] = [
+    { days: null, label: '없음' },
+    { days: 14, label: '2주' },
+    { days: 30, label: '한 달' },
+    { days: 90, label: '석 달' },
+  ];
+
+  const setCycle = async (days: number | null) => {
+    if (!person) return;
+    try {
+      const updated = await changeContactCycle(person.id, days);
+      setPerson(updated);
+      await syncContactCycleReminder(person.id, person.nickname, days);
+    } catch {}
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -107,6 +130,37 @@ export default function PersonDetailScreen() {
                   </ThemedText>
                 </Pressable>
               )}
+
+              <ThemedText type="smallBold" style={{ fontSize: 16, marginTop: Spacing.two }}>
+                연락 리마인더
+              </ThemedText>
+              <View style={styles.cycleRow}>
+                {CYCLE_OPTIONS.map((o) => {
+                  const active = (person.contactCycleDays ?? null) === o.days;
+                  return (
+                    <Pressable
+                      key={o.label}
+                      onPress={() => setCycle(o.days)}
+                      style={[
+                        styles.cycleChip,
+                        {
+                          backgroundColor: active ? theme.green : theme.backgroundElement,
+                          borderColor: theme.border,
+                        },
+                      ]}>
+                      <ThemedText
+                        type="small"
+                        style={{ color: active ? theme.onAccent : theme.textSecondary }}>
+                        {o.label}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                주기를 정하면 "{person.nickname} 님과 이을 시간이에요"라고 알려드려요. 알림은
+                휴대폰에서만 울려요.
+              </ThemedText>
 
               <View style={styles.memoryHeader}>
                 <ThemedText type="smallBold" style={{ fontSize: 16 }}>
@@ -221,6 +275,16 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  cycleRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  cycleChip: {
+    borderRadius: Radius.chip,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
   },
   memoryHeader: {
     flexDirection: 'row',

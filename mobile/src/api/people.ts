@@ -61,6 +61,11 @@ export function changePersonStatus(id: number, status: RelationStatus) {
   return apiSend<Person>(`/api/people/${id}/status?status=${status}`, 'PATCH');
 }
 
+export function changeContactCycle(id: number, days: number | null) {
+  const query = days ? `?days=${days}` : '';
+  return apiSend<Person>(`/api/people/${id}/contact-cycle${query}`, 'PATCH');
+}
+
 export type MemoryRequest = {
   category: MemoryCategory;
   emotion?: EmotionTag;

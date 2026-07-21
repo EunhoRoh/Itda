@@ -72,6 +72,19 @@ class PersonApiTest {
     }
 
     @Test
+    void 연락_주기를_설정하고_해제한다() throws Exception {
+        long id = createPerson("지훈", "DRIFTED", false);
+
+        mockMvc.perform(patch("/api/people/" + id + "/contact-cycle").param("days", "30"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contactCycleDays").value(30));
+
+        mockMvc.perform(patch("/api/people/" + id + "/contact-cycle"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contactCycleDays").isEmpty());
+    }
+
+    @Test
     void 사람에게_추억을_기록하고_조회한다() throws Exception {
         long id = createPerson("지훈", "DRIFTED", false);
 

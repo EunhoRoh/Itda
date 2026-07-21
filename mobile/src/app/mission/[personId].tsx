@@ -30,6 +30,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MemoryCategoryLabels } from '@/constants/labels';
+import { cancelMissionFollowUp, scheduleMissionFollowUp } from '@/notifications/reminders';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -137,6 +138,7 @@ export default function MissionScreen() {
     }
     Alert.alert('복사했어요', '카카오톡이나 문자에 붙여넣어 보내면 돼요. 보내는 건 당신의 몫이에요.');
     await advance();
+    if (person) scheduleMissionFollowUp(person.id, person.nickname);
   };
 
   const finish = async (result: MissionResult) => {
@@ -144,6 +146,8 @@ export default function MissionScreen() {
     try {
       setMission(await recordMissionResult(mission.id, result));
       setFinishedResult(result);
+      // NO_REPLY는 아직 기다리는 중이므로 24시간 팔로업 알림을 유지한다
+      if (result !== 'NO_REPLY') cancelMissionFollowUp(id);
     } catch (e) {
       Alert.alert('잠깐요', e instanceof Error ? e.message : '기록하지 못했어요');
     }

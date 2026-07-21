@@ -43,4 +43,11 @@ public class PersonController {
     public PersonResponse changeStatus(@PathVariable Long id, @RequestParam RelationStatus status) {
         return personService.changeStatus(id, status);
     }
+
+    // days 미전달 시 주기 해제
+    @PatchMapping("/{id}/contact-cycle")
+    public PersonResponse changeContactCycle(
+            @PathVariable Long id, @RequestParam(required = false) Integer days) {
+        return personService.changeContactCycle(id, days);
+    }
 }

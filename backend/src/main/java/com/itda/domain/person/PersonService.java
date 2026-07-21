@@ -46,6 +46,13 @@ public class PersonService {
         return PersonResponse.from(person);
     }
 
+    @Transactional
+    public PersonResponse changeContactCycle(Long id, Integer days) {
+        Person person = getPerson(id);
+        person.changeContactCycle(days);
+        return PersonResponse.from(person);
+    }
+
     public Person getPerson(Long id) {
         return personRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사람입니다. id=" + id));

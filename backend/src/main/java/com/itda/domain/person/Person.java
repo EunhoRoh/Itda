@@ -66,4 +66,8 @@ public class Person extends BaseTimeEntity {
     public void recordContact(LocalDate date) {
         this.lastContactAt = date;
     }
+
+    public void changeContactCycle(Integer days) {
+        this.contactCycleDays = days;
+    }
 }
