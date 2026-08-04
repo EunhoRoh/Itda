@@ -36,7 +36,7 @@ export default function NewPersonScreen() {
   const pickFromContacts = async () => {
     try {
       const contact = await Contacts.presentContactPickerAsync();
-      if (contact?.name) setNickname(contact.name);
+      if (contact?.name) setNickname(contact.name.slice(0, 50));
     } catch (e) {
       Alert.alert(
         '연락처를 열지 못했어요',
@@ -99,6 +99,7 @@ export default function NewPersonScreen() {
               <TextInput
                 value={nickname}
                 onChangeText={setNickname}
+                maxLength={50}
                 placeholder="예: 지훈, 어머니, 김 대리"
                 placeholderTextColor={theme.textSecondary}
                 style={[

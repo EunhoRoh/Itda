@@ -108,6 +108,12 @@ export default function NewMemoryScreen() {
                 </View>
               </Pressable>
 
+              <View style={[styles.promptBox, { borderColor: theme.border }]}>
+                <ThemedText type="small" style={{ color: theme.green, fontStyle: 'italic' }}>
+                  💭 {MemoryCategoryLabels[category].prompt}
+                </ThemedText>
+              </View>
+
               <ThemedText type="smallBold">어떤 마음이 남아 있나요? (선택)</ThemedText>
               <View style={styles.chipRow}>
                 {EMOTIONS.map((e) => {
@@ -162,7 +168,7 @@ export default function NewMemoryScreen() {
               <TextInput
                 value={note}
                 onChangeText={setNote}
-                placeholder="예: 밤바다에서 라면 먹던 날"
+                placeholder={MemoryCategoryLabels[category].prompt}
                 placeholderTextColor={theme.textSecondary}
                 maxLength={200}
                 style={[
@@ -250,6 +256,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  promptBox: {
+    borderRadius: Radius.button,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderStyle: 'dashed',
+    padding: Spacing.three,
   },
   chipRow: {
     flexDirection: 'row',

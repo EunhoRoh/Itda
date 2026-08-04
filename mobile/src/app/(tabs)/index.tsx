@@ -52,8 +52,14 @@ export default function HomeScreen() {
     [people],
   );
   const [skipCount, setSkipCount] = useState(0);
+  // 후보 구성·순서가 바뀌면(리로드, 상태 전환) 순환을 처음부터 — 조작 없이 hero가 튀는 것 방지
+  const candidateKey = candidates.map((c) => c.id).join(',');
+  useEffect(() => {
+    setSkipCount(0);
+  }, [candidateKey]);
   const hero: Person | undefined = candidates[skipCount % Math.max(candidates.length, 1)];
 
+  const [focusTick, setFocusTick] = useState(0);
   const [heroMemory, setHeroMemory] = useState<Memory | null>(null);
   useEffect(() => {
     setHeroMemory(null);
@@ -67,7 +73,7 @@ export default function HomeScreen() {
     return () => {
       cancelled = true;
     };
-  }, [hero?.id]);
+  }, [hero?.id, focusTick]);
 
   const counts = useMemo(
     () => ({
@@ -79,13 +85,19 @@ export default function HomeScreen() {
   );
 
   const [activeMissions, setActiveMissions] = useState<Mission[]>([]);
+  // 홈 데이터 일괄 갱신 — 포커스 복귀와 "다시 시도"가 같은 경로를 탄다
+  const refresh = useCallback(() => {
+    reload();
+    fetchActiveMissions()
+      .then(setActiveMissions)
+      .catch(() => {});
+    setFocusTick((t) => t + 1);
+  }, [reload]);
+
   useFocusEffect(
     useCallback(() => {
-      reload();
-      fetchActiveMissions()
-        .then(setActiveMissions)
-        .catch(() => setActiveMissions([]));
-    }, [reload]),
+      refresh();
+    }, [refresh]),
   );
 
   const stepLabel: Record<Mission['step'], string> = {
@@ -114,14 +126,14 @@ export default function HomeScreen() {
             오늘, 한 사람만{'\n'}이어볼까요?
           </ThemedText>
 
-          {status === 'error' && (
+          {status === 'error' && people.length === 0 && (
             <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
               <ThemedText type="smallBold">서버에 연결하지 못했어요</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 backend를 실행했는지 확인해 주세요. ({message})
               </ThemedText>
               <Pressable
-                onPress={reload}
+                onPress={refresh}
                 style={({ pressed }) => [
                   styles.cta,
                   { backgroundColor: theme.green },
@@ -132,6 +144,23 @@ export default function HomeScreen() {
                 </ThemedText>
               </Pressable>
             </ThemedView>
+          )}
+
+          {status === 'error' && people.length > 0 && (
+            <Pressable onPress={refresh}>
+              <ThemedView
+                type="backgroundElement"
+                style={[styles.missionCard, { borderColor: theme.border }]}>
+                <View style={styles.missionText}>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    새로고침에 실패했어요 — 마지막 정보를 보여드리고 있어요
+                  </ThemedText>
+                </View>
+                <ThemedText type="smallBold" style={{ color: theme.green }}>
+                  다시 시도
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
           )}
 
           {status === 'ready' && !hero && (

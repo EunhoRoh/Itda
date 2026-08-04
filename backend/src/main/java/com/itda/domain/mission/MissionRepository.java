@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MissionRepository extends JpaRepository<Mission, Long> {
 
-    Optional<Mission> findFirstByPersonIdAndStepNot(Long personId, MissionStep step);
+    Optional<Mission> findFirstByPersonIdAndStepNotOrderByIdDesc(Long personId, MissionStep step);
 
     List<Mission> findAllByStepNotOrderByUpdatedAtDesc(MissionStep step);
 }

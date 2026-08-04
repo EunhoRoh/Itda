@@ -29,7 +29,13 @@ import {
 } from '@/api/people';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MemoryCategoryLabels } from '@/constants/labels';
+import {
+  buildBoosterCards,
+  buildTemplates,
+  TemplateLabels,
+  warmupCopy,
+  type TemplateKey,
+} from '@/constants/mission-content';
 import { cancelMissionFollowUp, scheduleMissionFollowUp } from '@/notifications/reminders';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -40,20 +46,6 @@ const STEP_CHIPS = [
   { key: 'DRAFT', label: '초안' },
   { key: 'SENT', label: '기록' },
 ] as const;
-
-type TemplateKey = 'greeting' | 'memory' | 'honest';
-
-function buildTemplates(person: Person, memory: Memory | null): Record<TemplateKey, string> {
-  const name = person.nickname;
-  const memoryLine = memory?.note
-    ? `갑자기 ${memory.note} 생각나서 연락해봤어.`
-    : '문득 예전 생각이 나서 연락해봤어.';
-  return {
-    greeting: `${name}, 오랜만이야. 문득 생각나서 연락해봤어. 잘 지내지?`,
-    memory: `${name}, 오랜만이야. ${memoryLine} 잘 지내고 있지? 언제 한번 보자.`,
-    honest: `${name}, 연락 못 한 지 너무 오래됐네. 계속 생각은 났는데 괜히 용기가 안 났어. 잘 지내는지 궁금해서 연락해봤어.`,
-  };
-}
 
 export default function MissionScreen() {
   const theme = useTheme();
@@ -97,52 +89,43 @@ export default function MissionScreen() {
   }, [templates, template]);
 
   const boosterCards = useMemo(
-    () => [
-      {
-        tag: '연구가 말해줘요 · 1/3',
-        title: '연락받은 사람은,\n보낸 사람 생각보다\n훨씬 반가워했어요.',
-        source: 'Liu et al. (2023) · JPSP · 독립 재현 성공',
-      },
-      {
-        tag: '연구가 말해줘요 · 2/3',
-        title: '워밍업을 마친 사람의\n53%가 실제로 연락했어요.\n하지 않은 사람은 31%.',
-        source: 'Aknin & Sandstrom (2024) · Nature Comm. Psychol.',
-      },
-      {
-        tag: '당신들의 이야기 · 3/3',
-        title: memory?.note
-          ? `“${memory.note}”\n\n이 기억을 아는 사람은\n세상에 두 명뿐이에요.`
-          : '함께한 시간은\n사라지지 않았어요.\n다시 꺼내는 사람이 있을 뿐.',
-        source: memory
-          ? `${MemoryCategoryLabels[memory.category].emoji} ${MemoryCategoryLabels[memory.category].label}${memory.year ? ` · ${memory.year}` : ''}`
-          : '',
-      },
-    ],
-    [memory],
+    () => (person ? buildBoosterCards(person, memory) : []),
+    [person, memory],
   );
 
-  const advance = async () => {
-    if (!mission) return;
+  // 서버 왕복 중 CTA 더블탭 방지 — 중복 advance는 단계를 건너뛰게 만든다 (검증 리뷰 확정 버그)
+  const [busy, setBusy] = useState(false);
+
+  const advance = async (): Promise<Mission | null> => {
+    if (!mission || busy) return null;
+    setBusy(true);
     try {
-      setMission(await advanceMission(mission.id));
+      const updated = await advanceMission(mission.id);
+      setMission(updated);
+      return updated;
     } catch (e) {
       Alert.alert('잠깐요', e instanceof Error ? e.message : '진행하지 못했어요');
+      return null;
+    } finally {
+      setBusy(false);
     }
   };
 
   const copyAndOpen = async () => {
-    if (!mission) return;
-    await Clipboard.setStringAsync(draft);
+    if (!mission || busy) return;
+    await Clipboard.setStringAsync(draft).catch(() => {});
     if (Platform.OS !== 'web') {
       Linking.openURL('kakaotalk://launch').catch(() => {});
     }
     Alert.alert('복사했어요', '카카오톡이나 문자에 붙여넣어 보내면 돼요. 보내는 건 당신의 몫이에요.');
-    await advance();
-    if (person) scheduleMissionFollowUp(person.id, person.nickname);
+    const updated = await advance();
+    // 팔로업 알림은 서버가 SENT를 확정했을 때만 — 실패했는데 24시간 뒤에 물어보면 안 된다
+    if (updated?.step === 'SENT' && person) scheduleMissionFollowUp(person.id, person.nickname);
   };
 
   const finish = async (result: MissionResult) => {
-    if (!mission) return;
+    if (!mission || busy) return;
+    setBusy(true);
     try {
       setMission(await recordMissionResult(mission.id, result));
       setFinishedResult(result);
@@ -150,6 +133,8 @@ export default function MissionScreen() {
       if (result !== 'NO_REPLY') cancelMissionFollowUp(id);
     } catch (e) {
       Alert.alert('잠깐요', e instanceof Error ? e.message : '기록하지 못했어요');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -203,17 +188,13 @@ export default function MissionScreen() {
             </ThemedView>
           )}
 
-          {step === 'WARMUP' && (
+          {step === 'WARMUP' && person && (
             <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
               <ThemedText type="subtitle" style={styles.stepTitle}>
-                몸풀기부터{'\n'}시작해요
+                {warmupCopy(person).title}
               </ThemedText>
               <ThemedText type="default" themeColor="textSecondary" style={styles.para}>
-                오래 끊긴 사람에게 바로 연락하는 건 누구에게나 어려워요. 먼저{' '}
-                <ThemedText type="default" style={{ color: theme.coral, fontWeight: 700 }}>
-                  지금 편한 사람 한 명
-                </ThemedText>
-                에게 가벼운 안부를 보내 보세요. {'"'}밥 잘 챙겨 먹고 있어?{'"'} 한 줄이면 충분해요.
+                {warmupCopy(person).body}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 이 3분짜리 연습만으로 실제 연락 확률이 31%에서 53%로 올라가요 (2024년 연구).
@@ -233,7 +214,7 @@ export default function MissionScreen() {
             </ThemedView>
           )}
 
-          {step === 'BOOSTER' && (
+          {step === 'BOOSTER' && boosterCards.length > 0 && (
             <View style={styles.boosterWrap}>
               <View style={[styles.booster, { backgroundColor: theme.green }]}>
                 <ThemedText type="small" style={[styles.boosterTag, { color: theme.greenSoft }]}>
@@ -279,13 +260,7 @@ export default function MissionScreen() {
                 보낼 첫 마디
               </ThemedText>
               <View style={styles.templateRow}>
-                {(
-                  [
-                    ['greeting', '가벼운 안부'],
-                    ['memory', '추억 소환'],
-                    ['honest', '솔직하게'],
-                  ] as const
-                ).map(([key, label]) => (
+                {(Object.entries(TemplateLabels) as [TemplateKey, string][]).map(([key, label]) => (
                   <Pressable
                     key={key}
                     onPress={() => setTemplate(key)}
@@ -383,8 +358,14 @@ export default function MissionScreen() {
                           try {
                             const updated = await changePersonStatus(person.id, 'CONNECTED');
                             setPerson(updated);
-                          } catch {}
-                          setStatusAnswered(true);
+                            setStatusAnswered(true);
+                          } catch (e) {
+                            // 실패를 성공처럼 넘기면 홈 추천에 계속 남는다 — 알리고 재시도 기회 유지
+                            Alert.alert(
+                              '바꾸지 못했어요',
+                              e instanceof Error ? e.message : '잠시 후 다시 시도해 주세요',
+                            );
+                          }
                         }}
                         style={({ pressed }) => [
                           styles.cta,
@@ -428,8 +409,8 @@ export default function MissionScreen() {
                     괜찮아요
                   </ThemedText>
                   <ThemedText type="default" themeColor="textSecondary" style={styles.para}>
-                    여기까지 온 것만으로 마음은 이미 절반쯤 전해질 준비가 됐어요. 초안은 저장해
-                    뒀으니, 준비되면 언제든 다시 열어요.
+                    여기까지 온 것만으로 마음은 이미 절반쯤 전해질 준비가 됐어요. 준비되면
+                    언제든, 처음부터 천천히 다시 시작해요.
                   </ThemedText>
                 </>
               )}

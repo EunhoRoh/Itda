@@ -85,6 +85,18 @@ class PersonApiTest {
     }
 
     @Test
+    void 안전_우려_관계에는_연락_주기를_설정할_수_없다() throws Exception {
+        long id = createPerson("아무개", "ESTRANGED", true);
+
+        mockMvc.perform(patch("/api/people/" + id + "/contact-cycle").param("days", "30"))
+                .andExpect(status().isConflict());
+
+        // 해제(days 미전달)는 보호 관계에서도 허용
+        mockMvc.perform(patch("/api/people/" + id + "/contact-cycle"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void 사람에게_추억을_기록하고_조회한다() throws Exception {
         long id = createPerson("지훈", "DRIFTED", false);
 

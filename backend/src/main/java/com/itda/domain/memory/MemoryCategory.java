@@ -12,5 +12,10 @@ public enum MemoryCategory {
     ACHIEVEMENT,  // 함께 이룬 것
     DAILY,        // 사소한 일상
     GIFT,         // 선물
+    MUSIC,        // 함께 듣던 노래
+    PLACE,        // 자주 가던 곳
+    SHOW,         // 같이 본 것 (영화·드라마·경기)
+    TALK,         // 나눈 이야기
+    JOKE,         // 둘만 아는 농담
     CUSTOM        // 직접 입력
 }

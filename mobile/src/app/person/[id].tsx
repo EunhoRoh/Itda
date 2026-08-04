@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -40,6 +40,7 @@ export default function PersonDetailScreen() {
 
   const [person, setPerson] = useState<Person | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const CYCLE_OPTIONS: { days: number | null; label: string }[] = [
     { days: null, label: '없음' },
@@ -53,13 +54,28 @@ export default function PersonDetailScreen() {
     try {
       const updated = await changeContactCycle(person.id, days);
       setPerson(updated);
-      await syncContactCycleReminder(person.id, person.nickname, days);
-    } catch {}
+      const scheduled = await syncContactCycleReminder(person.id, person.nickname, days);
+      if (days && !scheduled) {
+        Alert.alert(
+          '알림 권한이 꺼져 있어요',
+          '주기는 저장했지만 휴대폰 알림은 울리지 않아요. 설정에서 잇다 알림을 허용해 주세요.',
+        );
+      }
+    } catch (e) {
+      Alert.alert('저장하지 못했어요', e instanceof Error ? e.message : '다시 시도해 주세요');
+    }
   };
 
   useFocusEffect(
     useCallback(() => {
-      fetchPerson(id).then(setPerson).catch(() => {});
+      if (!Number.isFinite(id)) {
+        setLoadError('사람을 찾을 수 없어요');
+        return;
+      }
+      setLoadError(null);
+      fetchPerson(id)
+        .then(setPerson)
+        .catch((e) => setLoadError(e instanceof Error ? e.message : '불러오지 못했어요'));
       fetchMemories(id).then(setMemories).catch(() => {});
     }, [id]),
   );
@@ -73,6 +89,17 @@ export default function PersonDetailScreen() {
               ← 뒤로
             </ThemedText>
           </Pressable>
+
+          {loadError && !person && (
+            <ThemedView
+              type="backgroundElement"
+              style={[styles.safetyCard, { borderColor: theme.border }]}>
+              <ThemedText type="smallBold">불러오지 못했어요</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {loadError}
+              </ThemedText>
+            </ThemedView>
+          )}
 
           {person && (
             <>
@@ -131,36 +158,40 @@ export default function PersonDetailScreen() {
                 </Pressable>
               )}
 
-              <ThemedText type="smallBold" style={{ fontSize: 16, marginTop: Spacing.two }}>
-                연락 리마인더
-              </ThemedText>
-              <View style={styles.cycleRow}>
-                {CYCLE_OPTIONS.map((o) => {
-                  const active = (person.contactCycleDays ?? null) === o.days;
-                  return (
-                    <Pressable
-                      key={o.label}
-                      onPress={() => setCycle(o.days)}
-                      style={[
-                        styles.cycleChip,
-                        {
-                          backgroundColor: active ? theme.green : theme.backgroundElement,
-                          borderColor: theme.border,
-                        },
-                      ]}>
-                      <ThemedText
-                        type="small"
-                        style={{ color: active ? theme.onAccent : theme.textSecondary }}>
-                        {o.label}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
-                주기를 정하면 "{person.nickname} 님과 이을 시간이에요"라고 알려드려요. 알림은
-                휴대폰에서만 울려요.
-              </ThemedText>
+              {person.reconnectAllowed && (
+                <>
+                  <ThemedText type="smallBold" style={{ fontSize: 16, marginTop: Spacing.two }}>
+                    연락 리마인더
+                  </ThemedText>
+                  <View style={styles.cycleRow}>
+                    {CYCLE_OPTIONS.map((o) => {
+                      const active = (person.contactCycleDays ?? null) === o.days;
+                      return (
+                        <Pressable
+                          key={o.label}
+                          onPress={() => setCycle(o.days)}
+                          style={[
+                            styles.cycleChip,
+                            {
+                              backgroundColor: active ? theme.green : theme.backgroundElement,
+                              borderColor: theme.border,
+                            },
+                          ]}>
+                          <ThemedText
+                            type="small"
+                            style={{ color: active ? theme.onAccent : theme.textSecondary }}>
+                            {o.label}
+                          </ThemedText>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                    주기를 정하면 "{person.nickname} 님과 이을 시간이에요"라고 알려드려요. 알림은
+                    휴대폰에서만 울려요.
+                  </ThemedText>
+                </>
+              )}
 
               <View style={styles.memoryHeader}>
                 <ThemedText type="smallBold" style={{ fontSize: 16 }}>

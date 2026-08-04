@@ -49,6 +49,10 @@ public class PersonService {
     @Transactional
     public PersonResponse changeContactCycle(Long id, Integer days) {
         Person person = getPerson(id);
+        // 미션과 동일한 안전 불변식 — 재연락 유도(리마인더)도 보호 관계에는 열지 않는다 (결정로그 #12)
+        if (days != null && !person.reconnectAllowed()) {
+            throw new IllegalStateException("안전을 위해 이 관계에는 연락 리마인더를 설정하지 않아요.");
+        }
         person.changeContactCycle(days);
         return PersonResponse.from(person);
     }

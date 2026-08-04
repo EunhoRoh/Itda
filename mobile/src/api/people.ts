@@ -12,6 +12,11 @@ export type MemoryCategory =
   | 'ACHIEVEMENT'
   | 'DAILY'
   | 'GIFT'
+  | 'MUSIC'
+  | 'PLACE'
+  | 'SHOW'
+  | 'TALK'
+  | 'JOKE'
   | 'CUSTOM';
 export type EmotionTag = 'LONGING' | 'GRATITUDE' | 'SORRY' | 'JOY' | 'REGRET';
 

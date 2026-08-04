@@ -25,7 +25,7 @@ public class MissionService {
             // 안전 스크리닝 통과 못한 관계는 재연락 유도 금지 (결정로그 #12)
             throw new IllegalStateException("안전을 위해 이 관계에는 재연락 미션을 열지 않아요.");
         }
-        return missionRepository.findFirstByPersonIdAndStepNot(personId, MissionStep.DONE)
+        return missionRepository.findFirstByPersonIdAndStepNotOrderByIdDesc(personId, MissionStep.DONE)
                 .map(MissionResponse::from)
                 .orElseGet(() -> MissionResponse.from(
                         missionRepository.save(Mission.builder().person(person).build())));
