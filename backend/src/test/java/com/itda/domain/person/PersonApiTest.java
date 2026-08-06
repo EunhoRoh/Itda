@@ -68,7 +68,9 @@ class PersonApiTest {
 
         mockMvc.perform(patch("/api/people/" + id + "/status").param("status", "CONNECTED"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CONNECTED"));
+                .andExpect(jsonPath("$.status").value("CONNECTED"))
+                // 애프터케어 기준점 — 재연결 시점이 기록된다 (docs/12 §15-5)
+                .andExpect(jsonPath("$.reconnectedAt").isNotEmpty());
     }
 
     @Test

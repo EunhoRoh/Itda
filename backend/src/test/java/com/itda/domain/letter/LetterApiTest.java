@@ -128,6 +128,48 @@ class LetterApiTest {
     }
 
     @Test
+    void 커넥트_후_발신자가_공개_여부를_결정한다() throws Exception {
+        Letter received = letterRepository.save(Letter.builder()
+                .direction(LetterDirection.RECEIVED)
+                .anonymous(true)
+                .senderName("용감한 사자")
+                .emotion(LetterEmotion.FONDNESS)
+                .body("익명의 누군가가 당신에게 호감을 느끼고 있습니다.")
+                .preset(true)
+                .build());
+
+        // 커넥트 전에는 결정 불가
+        mockMvc.perform(patch("/api/letters/" + received.getId() + "/decide")
+                        .param("decision", "REVEAL"))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(patch("/api/letters/" + received.getId() + "/react")
+                        .param("reaction", "CONNECT_REQUESTED"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/letters/" + received.getId() + "/decide")
+                        .param("decision", "ANON_CHAT"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.senderDecision").value("ANON_CHAT"));
+
+        // 재결정 불가
+        mockMvc.perform(patch("/api/letters/" + received.getId() + "/decide")
+                        .param("decision", "REVEAL"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 키가_없으면_표현_다듬기는_안내와_함께_거절된다() throws Exception {
+        mockMvc.perform(post("/api/letters/refine")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "emotion", "GRATITUDE",
+                                "body", "그때 고마웠어"
+                        ))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void 받은_마음에_반응하면_상태가_바뀐다() throws Exception {
         Letter received = letterRepository.save(Letter.builder()
                 .direction(LetterDirection.RECEIVED)

@@ -61,10 +61,21 @@ public class LetterService {
 
     @Transactional
     public LetterResponse react(Long letterId, LetterStatus reaction) {
-        Letter letter = letterRepository.findById(letterId)
-                .orElseThrow(() -> new EntityNotFoundException("마음을 찾을 수 없어요. id=" + letterId));
+        Letter letter = getLetter(letterId);
         letter.react(reaction);
         return LetterResponse.from(letter);
+    }
+
+    @Transactional
+    public LetterResponse decide(Long letterId, SenderDecision decision) {
+        Letter letter = getLetter(letterId);
+        letter.decide(decision);
+        return LetterResponse.from(letter);
+    }
+
+    private Letter getLetter(Long letterId) {
+        return letterRepository.findById(letterId)
+                .orElseThrow(() -> new EntityNotFoundException("마음을 찾을 수 없어요. id=" + letterId));
     }
 
     private long countTodayAnonymous() {

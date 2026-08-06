@@ -1,6 +1,11 @@
 spring:
   profiles:
     active: test
+
+# 테스트에서는 실제 API 호출을 막는다 (키가 있는 로컬에서도 비활성)
+itda:
+  refine:
+    api-key: ""
   datasource:
     url: jdbc:h2:mem:itda;MODE=PostgreSQL
     username: sa

@@ -12,7 +12,8 @@ public record PersonResponse(
         RelationStatus status,
         boolean reconnectAllowed,
         LocalDate lastContactAt,
-        Integer contactCycleDays
+        Integer contactCycleDays,
+        LocalDate reconnectedAt
 ) {
     public static PersonResponse from(Person person) {
         return new PersonResponse(
@@ -22,7 +23,8 @@ public record PersonResponse(
                 person.getStatus(),
                 person.reconnectAllowed(),
                 person.getLastContactAt(),
-                person.getContactCycleDays()
+                person.getContactCycleDays(),
+                person.getReconnectedAt()
         );
     }
 }

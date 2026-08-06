@@ -51,6 +51,10 @@ public class Letter extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private LetterStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private SenderDecision senderDecision;
+
     @Builder
     private Letter(LetterDirection direction, Long personId, boolean anonymous,
                    String senderName, LetterEmotion emotion, String body, boolean preset) {
@@ -62,6 +66,21 @@ public class Letter extends BaseTimeEntity {
         this.body = body;
         this.preset = preset;
         this.status = LetterStatus.DELIVERED;
+        this.senderDecision = SenderDecision.NONE;
+    }
+
+    // 수신자가 커넥트를 눌렀을 때만 발신자가 결정할 수 있다 (회원 도입 시 계정별 권한으로 분리)
+    public void decide(SenderDecision decision) {
+        if (status != LetterStatus.CONNECT_REQUESTED) {
+            throw new IllegalStateException("상대가 대화를 원할 때 결정할 수 있어요.");
+        }
+        if (decision == SenderDecision.NONE) {
+            throw new IllegalArgumentException("잘못된 선택이에요.");
+        }
+        if (senderDecision != SenderDecision.NONE) {
+            throw new IllegalStateException("이미 결정했어요.");
+        }
+        this.senderDecision = decision;
     }
 
     public void react(LetterStatus reaction) {

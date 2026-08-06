@@ -44,6 +44,9 @@ public class Person extends BaseTimeEntity {
     // 연락 주기(일 단위), null이면 리마인더 없음
     private Integer contactCycleDays;
 
+    // 다시 이어진 날 — 애프터케어 체크인(1주/1개월/기념일)의 기준점 (docs/12 §15-5)
+    private LocalDate reconnectedAt;
+
     @Builder
     private Person(String nickname, RelationType relationType, RelationStatus status,
                    boolean safetyConcern, LocalDate lastContactAt, Integer contactCycleDays) {
@@ -60,6 +63,9 @@ public class Person extends BaseTimeEntity {
     }
 
     public void changeStatus(RelationStatus status) {
+        if (status == RelationStatus.CONNECTED && this.status != RelationStatus.CONNECTED) {
+            this.reconnectedAt = LocalDate.now();
+        }
         this.status = status;
     }
 
