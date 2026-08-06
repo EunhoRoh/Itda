@@ -31,6 +31,11 @@ export const MemoryCategoryLabels: Record<
   MUSIC: { emoji: '🎵', label: '함께 듣던 노래', prompt: '들으면 그 사람이 자동으로 떠오르는 노래가 있나요?' },
   PLACE: { emoji: '📍', label: '자주 가던 곳', prompt: '지나가면 그 사람 생각이 나는 장소가 있나요?' },
   SHOW: { emoji: '🎬', label: '같이 본 것', prompt: '같이 보며 울고 웃었던 영화·드라마·경기가 있나요?' },
+  SPORTS: {
+    emoji: '⚽',
+    label: '같이 땀 흘린 기억',
+    prompt: '같이 뛰거나 오르거나 연주하던 시간, 어떤 장면이 남아 있나요?',
+  },
   TALK: { emoji: '🌙', label: '나눈 이야기', prompt: '밤늦게까지 이어졌던 대화의 주제가 기억나나요?' },
   JOKE: { emoji: '🤫', label: '둘만 아는 농담', prompt: '설명하면 재미없지만 둘은 아는 그 말, 뭐였나요?' },
   CUSTOM: { emoji: '✏️', label: '직접 입력', prompt: '떠오르는 대로 자유롭게 남겨 주세요.' },

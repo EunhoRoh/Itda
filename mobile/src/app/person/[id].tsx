@@ -5,12 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   changeContactCycle,
+  changePersonStatus,
   fetchMemories,
   fetchPerson,
   type Memory,
   type Person,
 } from '@/api/people';
-import { syncContactCycleReminder } from '@/notifications/reminders';
+import { cancelAftercare, syncContactCycleReminder } from '@/notifications/reminders';
+import { confirmAsync } from '@/utils/confirm';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
@@ -63,6 +65,27 @@ export default function PersonDetailScreen() {
       }
     } catch (e) {
       Alert.alert('저장하지 못했어요', e instanceof Error ? e.message : '다시 시도해 주세요');
+    }
+  };
+
+  /**
+   * 다시 멀어짐 — 애프터케어 알림까지 함께 끈다.
+   * 관계가 식은 뒤에도 "다시 이어진 지 1년이에요"가 울리면 위로가 아니라 상처가 된다.
+   */
+  const markDrifted = async () => {
+    if (!person) return;
+    const ok = await confirmAsync(
+      '다시 멀어진 관계로 둘까요?',
+      '재연결 기념 알림(1주·1개월·1주년)을 꺼드릴게요. 관계 기록과 추억은 그대로 남아요.',
+      '그렇게 할게요',
+    );
+    if (!ok) return;
+    try {
+      const updated = await changePersonStatus(person.id, 'DRIFTED');
+      setPerson(updated);
+      await cancelAftercare(person.id);
+    } catch (e) {
+      Alert.alert('바꾸지 못했어요', e instanceof Error ? e.message : '다시 시도해 주세요');
     }
   };
 
@@ -156,6 +179,40 @@ export default function PersonDetailScreen() {
                     용기 내보기
                   </ThemedText>
                 </Pressable>
+              )}
+
+              {person.reconnectAllowed && (
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: '/letter/new',
+                      params: { personId: String(person.id) },
+                    })
+                  }
+                  style={({ pressed }) => [
+                    styles.cta,
+                    styles.outlineCta,
+                    { borderColor: theme.coral },
+                    pressed && styles.pressed,
+                  ]}>
+                  <ThemedText type="smallBold" style={{ color: theme.coral }}>
+                    💌 마음 보내기
+                  </ThemedText>
+                </Pressable>
+              )}
+
+              {person.status === 'CONNECTED' && person.reconnectedAt && (
+                <>
+                  <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                    {person.reconnectedAt}에 다시 이어졌어요. 1주·1개월·1주년에 회상 알림을
+                    보내드려요.
+                  </ThemedText>
+                  <Pressable onPress={markDrifted} hitSlop={8}>
+                    <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                      다시 멀어졌어요 — 기념 알림 끄기
+                    </ThemedText>
+                  </Pressable>
+                </>
               )}
 
               {person.reconnectAllowed && (
@@ -303,6 +360,10 @@ const styles = StyleSheet.create({
     borderRadius: Radius.button,
     paddingVertical: Spacing.three,
     alignItems: 'center',
+  },
+  outlineCta: {
+    borderWidth: 1.5,
+    backgroundColor: 'transparent',
   },
   pressed: {
     opacity: 0.7,

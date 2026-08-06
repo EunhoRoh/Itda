@@ -79,13 +79,78 @@ export const WorkplacePresetPhrases: Record<string, string[]> = {
   ADMIRE: ['익명의 동료가 당신의 일하는 방식을 존경하고 있습니다.'],
 };
 
+/** 은사님 톤 팩 — 스승·제자 관계(MENTOR)면 이 문구를 우선 노출 */
+export const MentorPresetPhrases: Record<string, string[]> = {
+  GRATITUDE: [
+    '익명의 제자가 선생님께 오래 간직해온 감사를 전하고 싶어 합니다.',
+    '익명의 제자가 선생님의 가르침 덕분에 지금의 자신이 되었다고 전합니다.',
+  ],
+  ADMIRE: ['익명의 제자가 선생님을 여전히 마음의 스승으로 여기고 있습니다.'],
+  GREETING: ['익명의 제자가 선생님의 안부를 궁금해합니다.'],
+  MEMORY_KEEP: ['익명의 제자가 선생님과 함께한 교실의 기억을 소중히 간직하고 있습니다.'],
+};
+
+/**
+ * 발신자 힌트 (docs/12 §15-6) — "이 정보들이 함께 있을 때 받는 사람이 보낸 사람을 궁금해한다".
+ * 익명은 선택지만 허용(자유 텍스트 금지, #37의 연장) — 서버가 같은 규칙을 강제한다.
+ */
+export type HintContext =
+  | 'SCHOOL'
+  | 'TEACHER'
+  | 'WORK'
+  | 'PART_TIME'
+  | 'MILITARY'
+  | 'HOBBY'
+  | 'NEIGHBORHOOD'
+  | 'FAMILY'
+  | 'OTHER';
+export type HintPeriod = 'OVER_10Y' | 'Y5_10' | 'Y2_5' | 'RECENT';
+
+export const HintContextLabels: Record<HintContext, string> = {
+  SCHOOL: '학교에서 만난 사이',
+  TEACHER: '스승과 제자 사이',
+  WORK: '직장에서 만난 사이',
+  PART_TIME: '알바하며 만난 사이',
+  MILITARY: '군대에서 만난 사이',
+  HOBBY: '동호회·취미로 만난 사이',
+  NEIGHBORHOOD: '동네에서 만난 사이',
+  FAMILY: '가족·친척 사이',
+  OTHER: '그 밖의 인연',
+};
+
+export const HintPeriodLabels: Record<HintPeriod, string> = {
+  OVER_10Y: '10년도 더 전',
+  Y5_10: '5~10년 전',
+  Y2_5: '2~5년 전',
+  RECENT: '최근 2년 안',
+};
+
+/** 관계 유형에서 자연스러운 힌트 맥락을 미리 골라준다 — 마찰 최소화 */
+export function suggestedHintContext(relationType?: RelationType): HintContext | null {
+  switch (relationType) {
+    case 'COLLEAGUE':
+      return 'WORK';
+    case 'MENTOR':
+      return 'TEACHER';
+    case 'FAMILY':
+      return 'FAMILY';
+    default:
+      return null;
+  }
+}
+
 const ADJECTIVES = ['용감한', '다정한', '조용한', '씩씩한', '느긋한', '반짝이는', '순한', '단단한'];
 const ANIMALS = ['사자', '펭귄', '고래', '여우', '수달', '부엉이', '판다', '돌고래'];
 
-/** 익명 닉네임 — 수신자별로 달라야 발신자 특정을 막는다 (docs/12 §5) */
+/**
+ * 익명 닉네임 — 수신자별로 달라야 발신자 특정을 막는다 (docs/12 §5).
+ * 두 인덱스가 같은 주기(8)를 돌면 64조합 중 8개만 쓰이므로, 동물 인덱스는
+ * 형용사 한 바퀴(8)마다 한 칸 밀어 64조합을 모두 돌게 한다.
+ */
 export function anonymousNickname(personId: number): string {
-  const a = ADJECTIVES[(personId * 7 + 3) % ADJECTIVES.length];
-  const b = ANIMALS[(personId * 5 + 1) % ANIMALS.length];
+  const mixed = personId * 7 + 3;
+  const a = ADJECTIVES[mixed % ADJECTIVES.length];
+  const b = ANIMALS[Math.floor(mixed / ADJECTIVES.length) % ANIMALS.length];
   return `${a} ${b}`;
 }
 
@@ -93,6 +158,9 @@ export function presetsFor(emotion: LetterEmotion, relationType?: RelationType):
   const base = PresetPhrases[emotion] ?? [];
   if (relationType === 'COLLEAGUE') {
     return [...(WorkplacePresetPhrases[emotion] ?? []), ...base];
+  }
+  if (relationType === 'MENTOR') {
+    return [...(MentorPresetPhrases[emotion] ?? []), ...base];
   }
   return base;
 }

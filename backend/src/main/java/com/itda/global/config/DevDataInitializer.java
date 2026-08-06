@@ -1,5 +1,7 @@
 package com.itda.global.config;
 
+import com.itda.domain.letter.HintContext;
+import com.itda.domain.letter.HintPeriod;
 import com.itda.domain.letter.Letter;
 import com.itda.domain.letter.LetterDirection;
 import com.itda.domain.letter.LetterEmotion;
@@ -82,6 +84,8 @@ public class DevDataInitializer implements CommandLineRunner {
                 .emotion(LetterEmotion.GRATITUDE)
                 .body("힘들던 시기에 당신이 건넨 말 한마디가 오래 남아 있어요. 아마 기억 못 하실 수도 있지만, 그날 덕분에 버텼습니다. 고마웠어요.")
                 .preset(false)
+                .hintContext(HintContext.SCHOOL)
+                .hintPeriod(HintPeriod.OVER_10Y)
                 .build());
         letterRepository.save(Letter.builder()
                 .direction(LetterDirection.RECEIVED)
@@ -90,6 +94,8 @@ public class DevDataInitializer implements CommandLineRunner {
                 .emotion(LetterEmotion.RECONCILE)
                 .body("익명의 누군가가 당신과 오해를 풀고 싶어 해요.")
                 .preset(true)
+                .hintContext(HintContext.HOBBY)
+                .hintPeriod(HintPeriod.Y2_5)
                 .build());
     }
 }

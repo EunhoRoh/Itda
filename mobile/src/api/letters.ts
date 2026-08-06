@@ -1,5 +1,10 @@
 import { apiGet, apiSend } from './client';
-import type { LetterEmotion, LetterStatus } from '@/constants/letter-content';
+import type {
+  HintContext,
+  HintPeriod,
+  LetterEmotion,
+  LetterStatus,
+} from '@/constants/letter-content';
 
 export type LetterDirection = 'SENT' | 'RECEIVED';
 export type SenderDecision = 'NONE' | 'REVEAL' | 'ANON_CHAT' | 'KEEP_HEART';
@@ -13,8 +18,12 @@ export type Letter = {
   emotion: LetterEmotion;
   body: string;
   preset: boolean;
+  refined: boolean;
   status: LetterStatus;
   senderDecision: SenderDecision;
+  hintContext: HintContext | null;
+  hintPeriod: HintPeriod | null;
+  hintNow: string | null;
   createdAt: string;
 };
 
@@ -25,6 +34,10 @@ export type LetterRequest = {
   emotion: LetterEmotion;
   body: string;
   preset: boolean;
+  refined?: boolean;
+  hintContext?: HintContext;
+  hintPeriod?: HintPeriod;
+  hintNow?: string;
 };
 
 export function sendLetter(request: LetterRequest) {

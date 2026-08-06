@@ -1,5 +1,7 @@
 package com.itda.domain.letter.dto;
 
+import com.itda.domain.letter.HintContext;
+import com.itda.domain.letter.HintPeriod;
 import com.itda.domain.letter.Letter;
 import com.itda.domain.letter.LetterDirection;
 import com.itda.domain.letter.LetterEmotion;
@@ -16,8 +18,12 @@ public record LetterResponse(
         LetterEmotion emotion,
         String body,
         boolean preset,
+        boolean refined,
         LetterStatus status,
         SenderDecision senderDecision,
+        HintContext hintContext,
+        HintPeriod hintPeriod,
+        String hintNow,
         LocalDateTime createdAt
 ) {
     public static LetterResponse from(Letter letter) {
@@ -30,8 +36,12 @@ public record LetterResponse(
                 letter.getEmotion(),
                 letter.getBody(),
                 letter.isPreset(),
+                letter.isRefined(),
                 letter.getStatus(),
                 letter.getSenderDecision(),
+                letter.getHintContext(),
+                letter.getHintPeriod(),
+                letter.getHintNow(),
                 letter.getCreatedAt()
         );
     }

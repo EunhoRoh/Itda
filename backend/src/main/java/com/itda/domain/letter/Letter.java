@@ -47,6 +47,11 @@ public class Letter extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean preset;
 
+    // AI가 표현을 다듬은 문장인지 — 수신자에게 고지할 의무가 있다 (docs/12 §3:
+    // 재작성 사실을 숨기면 나중에 알았을 때 진정성 불신이 생긴다)
+    @Column(nullable = false)
+    private boolean refined;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private LetterStatus status;
@@ -55,9 +60,23 @@ public class Letter extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private SenderDecision senderDecision;
 
+    // 발신자 힌트 (docs/12 §15-6) — 익명 마음의 커넥트율을 올리는 단서. 전부 nullable.
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private HintContext hintContext;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private HintPeriod hintPeriod;
+
+    // 지금의 나 한 줄 — 실명 전용 자유 텍스트 (익명은 서버가 거부)
+    @Column(length = 60)
+    private String hintNow;
+
     @Builder
     private Letter(LetterDirection direction, Long personId, boolean anonymous,
-                   String senderName, LetterEmotion emotion, String body, boolean preset) {
+                   String senderName, LetterEmotion emotion, String body, boolean preset,
+                   boolean refined, HintContext hintContext, HintPeriod hintPeriod, String hintNow) {
         this.direction = direction;
         this.personId = personId;
         this.anonymous = anonymous;
@@ -65,6 +84,10 @@ public class Letter extends BaseTimeEntity {
         this.emotion = emotion;
         this.body = body;
         this.preset = preset;
+        this.refined = refined;
+        this.hintContext = hintContext;
+        this.hintPeriod = hintPeriod;
+        this.hintNow = hintNow;
         this.status = LetterStatus.DELIVERED;
         this.senderDecision = SenderDecision.NONE;
     }

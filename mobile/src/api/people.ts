@@ -15,6 +15,7 @@ export type MemoryCategory =
   | 'MUSIC'
   | 'PLACE'
   | 'SHOW'
+  | 'SPORTS'
   | 'TALK'
   | 'JOKE'
   | 'CUSTOM';

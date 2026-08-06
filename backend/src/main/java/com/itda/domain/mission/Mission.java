@@ -45,10 +45,6 @@ public class Mission extends BaseTimeEntity {
         this.step = MissionStep.WARMUP;
     }
 
-    public boolean isActive() {
-        return step != MissionStep.DONE;
-    }
-
     public void advance() {
         this.step = step.next();
     }

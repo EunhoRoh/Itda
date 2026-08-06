@@ -1,8 +1,9 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { fetchRoomByLetter } from '@/api/chats';
 import {
   decideLetter,
   fetchLetters,
@@ -11,9 +12,12 @@ import {
   type LetterDirection,
   type SenderDecision,
 } from '@/api/letters';
+import { fetchPeople } from '@/api/people';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
+  HintContextLabels,
+  HintPeriodLabels,
   LetterEmotionMeta,
   ReactionLabels,
   type LetterStatus,
@@ -31,6 +35,7 @@ export default function LettersScreen() {
   const [tab, setTab] = useState<LetterDirection>('RECEIVED');
   const [letters, setLetters] = useState<Letter[]>([]);
   const [openedId, setOpenedId] = useState<number | null>(null);
+  const [peopleNames, setPeopleNames] = useState<Record<number, string>>({});
 
   const reload = useCallback((direction: LetterDirection) => {
     fetchLetters(direction)
@@ -41,8 +46,35 @@ export default function LettersScreen() {
   useFocusEffect(
     useCallback(() => {
       reload(tab);
+      // 보낸 마음의 대화방 헤더에 상대 이름을 띄우기 위한 매핑
+      fetchPeople()
+        .then((all) =>
+          setPeopleNames(Object.fromEntries(all.map((p) => [p.id, p.nickname]))),
+        )
+        .catch(() => {});
     }, [reload, tab]),
   );
+
+  // 결정(REVEAL/ANON_CHAT)이 끝난 마음의 대화방으로 이동
+  const openChat = async (letter: Letter) => {
+    try {
+      const room = await fetchRoomByLetter(letter.id);
+      const name =
+        tab === 'SENT'
+          ? (letter.personId != null && peopleNames[letter.personId]) || '상대'
+          : letter.senderName;
+      router.push({
+        pathname: '/chat/[roomId]',
+        params: {
+          roomId: String(room.id),
+          role: tab === 'SENT' ? 'SENDER' : 'RECIPIENT',
+          name,
+        },
+      });
+    } catch {
+      Alert.alert('아직 대화방이 없어요', '상대의 결정을 기다리고 있어요.');
+    }
+  };
 
   const react = async (letter: Letter, reaction: Exclude<LetterStatus, 'DELIVERED'>) => {
     try {
@@ -160,6 +192,27 @@ export default function LettersScreen() {
                     {letter.senderName}
                     {letter.anonymous ? ' (익명)' : ''}
                   </ThemedText>
+                  {(letter.hintContext || letter.hintPeriod || letter.hintNow) && (
+                    <View style={[styles.hintBox, { borderColor: theme.border }]}>
+                      <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 11 }}>
+                        {tab === 'RECEIVED' ? '보낸 분이 남긴 단서' : '함께 보낸 단서'}
+                      </ThemedText>
+                      <ThemedText type="small" style={{ fontSize: 12, lineHeight: 18 }}>
+                        {[
+                          letter.hintContext ? HintContextLabels[letter.hintContext] : null,
+                          letter.hintPeriod ? HintPeriodLabels[letter.hintPeriod] : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </ThemedText>
+                      {!!letter.hintNow && (
+                        <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                          “{letter.hintNow}”
+                        </ThemedText>
+                      )}
+                    </View>
+                  )}
+
                   <ThemedText
                     type="default"
                     themeColor={opened ? 'text' : 'textSecondary'}
@@ -167,6 +220,12 @@ export default function LettersScreen() {
                     style={styles.body}>
                     {letter.body}
                   </ThemedText>
+
+                  {letter.refined && (
+                    <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 11 }}>
+                      🖋 마음은 보낸 사람의 것, 표현만 잇다가 함께 다듬었어요.
+                    </ThemedText>
+                  )}
 
                   {tab === 'SENT' && letter.status !== 'CONNECT_REQUESTED' && (
                     <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
@@ -218,9 +277,26 @@ export default function LettersScreen() {
                         </Pressable>
                       </View>
                     ) : (
-                      <ThemedText type="small" style={{ color: accent, fontSize: 12 }}>
-                        {DecisionText[letter.senderDecision as Exclude<SenderDecision, 'NONE'>]}
-                      </ThemedText>
+                      <>
+                        <ThemedText type="small" style={{ color: accent, fontSize: 12 }}>
+                          {DecisionText[letter.senderDecision as Exclude<SenderDecision, 'NONE'>]}
+                        </ThemedText>
+                        {letter.senderDecision !== 'KEEP_HEART' && (
+                          <Pressable
+                            onPress={() => openChat(letter)}
+                            style={({ pressed }) => [
+                              styles.reactBtn,
+                              { backgroundColor: accent },
+                              pressed && styles.pressed,
+                            ]}>
+                            <ThemedText
+                              type="smallBold"
+                              style={{ color: theme.onAccent, fontSize: 13 }}>
+                              💬 대화방 들어가기
+                            </ThemedText>
+                          </Pressable>
+                        )}
+                      </>
                     ))}
 
                   {tab === 'RECEIVED' && opened && letter.status === 'DELIVERED' && (
@@ -264,9 +340,33 @@ export default function LettersScreen() {
                     </ThemedText>
                   )}
                   {tab === 'RECEIVED' && letter.status === 'CONNECT_REQUESTED' && (
-                    <ThemedText type="small" style={{ color: accent, fontSize: 12 }}>
-                      💬 대화 요청을 전했어요 — 공개 여부는 보낸 분이 정해요
-                    </ThemedText>
+                    <>
+                      <ThemedText type="small" style={{ color: accent, fontSize: 12 }}>
+                        {letter.senderDecision === 'NONE'
+                          ? '💬 대화 요청을 전했어요 — 공개 여부는 보낸 분이 정해요'
+                          : letter.senderDecision === 'KEEP_HEART'
+                            ? '보낸 분은 아직 마음만 전하고 싶어 해요. 그 속도도 존중해 주세요.'
+                            : letter.senderDecision === 'REVEAL'
+                              ? '✨ 보낸 분이 이름을 밝히고 대화하기로 했어요'
+                              : '🦁 보낸 분이 익명인 채로 대화하기로 했어요'}
+                      </ThemedText>
+                      {(letter.senderDecision === 'REVEAL' ||
+                        letter.senderDecision === 'ANON_CHAT') && (
+                        <Pressable
+                          onPress={() => openChat(letter)}
+                          style={({ pressed }) => [
+                            styles.reactBtn,
+                            { backgroundColor: accent },
+                            pressed && styles.pressed,
+                          ]}>
+                          <ThemedText
+                            type="smallBold"
+                            style={{ color: theme.onAccent, fontSize: 13 }}>
+                            💬 대화방 들어가기
+                          </ThemedText>
+                        </Pressable>
+                      )}
+                    </>
                   )}
                   {tab === 'RECEIVED' && letter.status === 'DECLINED' && (
                     <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
@@ -343,6 +443,14 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 14,
     lineHeight: 22,
+  },
+  hintBox: {
+    borderRadius: Radius.button,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderStyle: 'dashed',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    gap: 2,
   },
   reactions: {
     gap: Spacing.two,

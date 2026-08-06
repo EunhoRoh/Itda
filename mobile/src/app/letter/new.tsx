@@ -9,8 +9,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
   anonymousNickname,
+  HintContextLabels,
+  HintPeriodLabels,
   LetterEmotionMeta,
   presetsFor,
+  suggestedHintContext,
+  type HintContext,
+  type HintPeriod,
   type LetterEmotion,
 } from '@/constants/letter-content';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
@@ -35,6 +40,10 @@ export default function NewLetterScreen() {
   const [sent, setSent] = useState(false);
   const [refining, setRefining] = useState(false);
   const [refinedDrafts, setRefinedDrafts] = useState<string[]>([]);
+  const [usedRefine, setUsedRefine] = useState(false);
+  const [hintContext, setHintContext] = useState<HintContext | null>(null);
+  const [hintPeriod, setHintPeriod] = useState<HintPeriod | null>(null);
+  const [hintNow, setHintNow] = useState('');
 
   const refine = async () => {
     if (!emotion || !customBody.trim() || refining) return;
@@ -57,6 +66,14 @@ export default function NewLetterScreen() {
   }, []);
 
   const person = useMemo(() => people.find((p) => p.id === personId) ?? null, [people, personId]);
+
+  // 관계 유형에서 힌트 맥락을 미리 골라준다 — 사용자가 바꾸면 그 선택을 유지
+  useEffect(() => {
+    if (!person || hintContext) return;
+    const suggested = suggestedHintContext(person.relationType);
+    if (suggested) setHintContext(suggested);
+  }, [person, hintContext]);
+
   const meta = emotion ? LetterEmotionMeta[emotion] : null;
   const presets = useMemo(
     () => (emotion && person ? presetsFor(emotion, person.relationType) : []),
@@ -64,8 +81,13 @@ export default function NewLetterScreen() {
   );
 
   const body = anonymous ? presetBody : customBody.trim() || presetBody;
+  // 익명은 '어떻게 아는 사이'가 필수 — 맥락 없는 익명은 호기심이 아니라 불안을 준다 (docs/12 §15-6)
   const canSend =
-    !!person && !!emotion && meta?.deliverable && !!body && (anonymous || senderName.trim());
+    !!person &&
+    !!emotion &&
+    meta?.deliverable &&
+    !!body &&
+    (anonymous ? !!hintContext : !!senderName.trim());
 
   const send = async () => {
     if (!person || !emotion || !body || sending) return;
@@ -78,6 +100,10 @@ export default function NewLetterScreen() {
         emotion,
         body,
         preset: anonymous ? true : body === presetBody,
+        refined: !anonymous && usedRefine && body === customBody.trim(),
+        hintContext: hintContext ?? undefined,
+        hintPeriod: hintPeriod ?? undefined,
+        hintNow: !anonymous && hintNow.trim() ? hintNow.trim() : undefined,
       });
       setSent(true);
     } catch (e) {
@@ -258,6 +284,88 @@ export default function NewLetterScreen() {
               )}
 
               <ThemedText type="smallBold">
+                우리, 어떻게 아는 사이인가요?{anonymous ? '' : ' (선택)'}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                {anonymous
+                  ? '받는 분이 놀라지 않도록, 최소한의 단서는 함께 전해요. 이름 없이도 "아, 그때 그 사람인가?" 하고 떠올릴 수 있게요.'
+                  : '함께한 시절을 적어주면 상대가 훨씬 빨리 당신을 떠올려요.'}
+              </ThemedText>
+              <View style={styles.chipWrap}>
+                {(Object.keys(HintContextLabels) as HintContext[]).map((key) => {
+                  const active = hintContext === key;
+                  return (
+                    <Pressable
+                      key={key}
+                      onPress={() => setHintContext(active ? null : key)}
+                      style={[
+                        styles.chip,
+                        {
+                          backgroundColor: active ? theme.green : theme.backgroundElement,
+                          borderColor: theme.border,
+                        },
+                      ]}>
+                      <ThemedText
+                        type="small"
+                        style={{ color: active ? theme.onAccent : theme.text, fontSize: 12 }}>
+                        {HintContextLabels[key]}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                언제쯤 함께했나요? (선택)
+              </ThemedText>
+              <View style={styles.chipWrap}>
+                {(Object.keys(HintPeriodLabels) as HintPeriod[]).map((key) => {
+                  const active = hintPeriod === key;
+                  return (
+                    <Pressable
+                      key={key}
+                      onPress={() => setHintPeriod(active ? null : key)}
+                      style={[
+                        styles.chip,
+                        {
+                          backgroundColor: active ? theme.green : theme.backgroundElement,
+                          borderColor: theme.border,
+                        },
+                      ]}>
+                      <ThemedText
+                        type="small"
+                        style={{ color: active ? theme.onAccent : theme.text, fontSize: 12 }}>
+                        {HintPeriodLabels[key]}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {!anonymous && (
+                <TextInput
+                  value={hintNow}
+                  onChangeText={setHintNow}
+                  maxLength={60}
+                  placeholder="지금의 나 한 줄 (예: 지금은 부산에서 간호사로 일해요)"
+                  placeholderTextColor={theme.textSecondary}
+                  style={[
+                    styles.input,
+                    {
+                      color: theme.text,
+                      backgroundColor: theme.backgroundElement,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                />
+              )}
+              {anonymous && (
+                <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 11 }}>
+                  익명일 때 자유 소개는 쓸 수 없어요 — 선택지만으로도 충분히 궁금해져요.
+                </ThemedText>
+              )}
+
+              <ThemedText type="smallBold">
                 {anonymous ? '준비된 문구에서 골라주세요' : '문구를 고르거나 직접 써주세요'}
               </ThemedText>
               {anonymous && (
@@ -295,6 +403,7 @@ export default function NewLetterScreen() {
                       setCustomBody(t);
                       if (t.trim()) setPresetBody(null);
                       setRefinedDrafts([]);
+                      setUsedRefine(false); // 직접 고쳐 썼으면 더는 '다듬은 문장'이 아니다
                     }}
                     maxLength={500}
                     placeholder="직접 쓸 수도 있어요. 구체적인 기억 하나면 충분해요."
@@ -333,6 +442,7 @@ export default function NewLetterScreen() {
                           onPress={() => {
                             setCustomBody(draft);
                             setRefinedDrafts([]);
+                            setUsedRefine(true); // 수신자에게 고지할 사실 (docs/12 §3)
                           }}
                           style={({ pressed }) => [
                             styles.presetCard,

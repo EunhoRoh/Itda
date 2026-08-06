@@ -45,7 +45,7 @@ class LetterApiTest {
 
     private String letterJson(long personId, boolean anonymous, String emotion, boolean preset)
             throws Exception {
-        return objectMapper.writeValueAsString(Map.of(
+        java.util.Map<String, Object> json = new java.util.HashMap<>(Map.of(
                 "personId", personId,
                 "anonymous", anonymous,
                 "senderName", anonymous ? "용감한 사자" : "은호",
@@ -53,6 +53,10 @@ class LetterApiTest {
                 "body", "고마웠어요.",
                 "preset", preset
         ));
+        if (anonymous) {
+            json.put("hintContext", "SCHOOL"); // 익명은 관계 힌트 필수 (docs/12 §15-6)
+        }
+        return objectMapper.writeValueAsString(json);
     }
 
     @Test
@@ -156,6 +160,80 @@ class LetterApiTest {
         mockMvc.perform(patch("/api/letters/" + received.getId() + "/decide")
                         .param("decision", "REVEAL"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 같은_사람에게는_일주일에_한_번만_보낼_수_있다() throws Exception {
+        long personId = createPerson("지훈", false);
+
+        mockMvc.perform(post("/api/letters")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(letterJson(personId, false, "GRATITUDE", false)))
+                .andExpect(status().isCreated());
+
+        // 결정 #34·#38 — 반복 도달 시도 자체가 스토킹 벡터라 서버가 막는다
+        mockMvc.perform(post("/api/letters")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(letterJson(personId, false, "GRATITUDE", false)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 익명은_관계_힌트가_필수다() throws Exception {
+        long personId = createPerson("지훈", false);
+
+        // hintContext 없이 익명 발신 → 409
+        mockMvc.perform(post("/api/letters")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "personId", personId,
+                                "anonymous", true,
+                                "senderName", "용감한 사자",
+                                "emotion", "GRATITUDE",
+                                "body", "익명의 누군가가 당신에게 고마움을 느끼고 있습니다.",
+                                "preset", true
+                        ))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 익명은_자유_소개를_쓸_수_없다() throws Exception {
+        long personId = createPerson("지훈", false);
+
+        mockMvc.perform(post("/api/letters")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "personId", personId,
+                                "anonymous", true,
+                                "senderName", "용감한 사자",
+                                "emotion", "GRATITUDE",
+                                "body", "익명의 누군가가 당신에게 고마움을 느끼고 있습니다.",
+                                "preset", true,
+                                "hintContext", "SCHOOL",
+                                "hintNow", "지금은 서울에서 일해요"
+                        ))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void 힌트는_응답에_담긴다() throws Exception {
+        long personId = createPerson("지훈", false);
+
+        mockMvc.perform(post("/api/letters")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "personId", personId,
+                                "anonymous", true,
+                                "senderName", "용감한 사자",
+                                "emotion", "GRATITUDE",
+                                "body", "익명의 누군가가 당신에게 고마움을 느끼고 있습니다.",
+                                "preset", true,
+                                "hintContext", "MILITARY",
+                                "hintPeriod", "Y5_10"
+                        ))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.hintContext").value("MILITARY"))
+                .andExpect(jsonPath("$.hintPeriod").value("Y5_10"));
     }
 
     @Test
