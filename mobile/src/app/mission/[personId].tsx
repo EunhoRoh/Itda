@@ -36,7 +36,11 @@ import {
   warmupCopy,
   type TemplateKey,
 } from '@/constants/mission-content';
-import { cancelMissionFollowUp, scheduleMissionFollowUp } from '@/notifications/reminders';
+import {
+  cancelMissionFollowUp,
+  scheduleAftercare,
+  scheduleMissionFollowUp,
+} from '@/notifications/reminders';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -359,6 +363,8 @@ export default function MissionScreen() {
                             const updated = await changePersonStatus(person.id, 'CONNECTED');
                             setPerson(updated);
                             setStatusAnswered(true);
+                            // 애프터케어 시작 — 1주/1개월/1주년 회상 체크인 (docs/12 §15-5)
+                            scheduleAftercare(person.id, person.nickname);
                           } catch (e) {
                             // 실패를 성공처럼 넘기면 홈 추천에 계속 남는다 — 알리고 재시도 기회 유지
                             Alert.alert(

@@ -87,3 +87,58 @@ export async function cancelMissionFollowUp(personId: number) {
   if (!supported) return;
   await Notifications.cancelScheduledNotificationAsync(`mission-${personId}`).catch(() => {});
 }
+
+/**
+ * 애프터케어 — 재연결 후 1주/1개월/1주년 회상 체크인 (docs/12 §15-5).
+ * 관계는 이어진 순간이 끝이 아니라 시작이라는 설계. 끄고 싶으면 상세에서 주기 해제와 함께 관리.
+ */
+const AFTERCARE_STEPS: { key: string; days: number; title: (n: string) => string; body: string }[] = [
+  {
+    key: 'week',
+    days: 7,
+    title: (n) => `${n} 님과 다시 이어진 지 일주일이에요`,
+    body: '첫 연락 이후 어떠셨어요? 가벼운 안부 한 줄이면 충분해요.',
+  },
+  {
+    key: 'month',
+    days: 30,
+    title: (n) => `${n} 님과의 한 달, 어떤 추억이 생겼나요?`,
+    body: '새로 생긴 기억을 남겨두면 다음 대화의 재료가 되어줘요.',
+  },
+  {
+    key: 'year',
+    days: 365,
+    title: (n) => `${n} 님과 다시 이어진 지 1년이에요 🧵`,
+    body: '당신에게 그 사람은 어떤 사람인가요? 오늘, 그 마음을 전해보세요.',
+  },
+];
+
+export async function scheduleAftercare(personId: number, nickname: string) {
+  if (!supported) return;
+  if (!(await ensurePermission())) return;
+  for (const step of AFTERCARE_STEPS) {
+    await Notifications.scheduleNotificationAsync({
+      identifier: `aftercare-${personId}-${step.key}`,
+      content: {
+        title: step.title(nickname),
+        body: step.body,
+        data: { personId },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: step.days * 24 * 60 * 60,
+        repeats: false,
+        channelId: 'reminders',
+      },
+    }).catch(() => {});
+  }
+}
+
+export async function cancelAftercare(personId: number) {
+  if (!supported) return;
+  for (const step of AFTERCARE_STEPS) {
+    await Notifications.cancelScheduledNotificationAsync(`aftercare-${personId}-${step.key}`).catch(
+      () => {},
+    );
+  }
+}

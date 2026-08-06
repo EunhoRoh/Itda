@@ -22,6 +22,7 @@ export default function RootLayout() {
         <Stack.Screen name="person/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="memory/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="letter/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="login" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
   );

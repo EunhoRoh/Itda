@@ -28,6 +28,7 @@ export type Person = {
   reconnectAllowed: boolean;
   lastContactAt: string | null;
   contactCycleDays: number | null;
+  reconnectedAt: string | null;
 };
 
 export type Memory = {

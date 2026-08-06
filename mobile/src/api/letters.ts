@@ -2,6 +2,7 @@ import { apiGet, apiSend } from './client';
 import type { LetterEmotion, LetterStatus } from '@/constants/letter-content';
 
 export type LetterDirection = 'SENT' | 'RECEIVED';
+export type SenderDecision = 'NONE' | 'REVEAL' | 'ANON_CHAT' | 'KEEP_HEART';
 
 export type Letter = {
   id: number;
@@ -13,6 +14,7 @@ export type Letter = {
   body: string;
   preset: boolean;
   status: LetterStatus;
+  senderDecision: SenderDecision;
   createdAt: string;
 };
 
@@ -35,4 +37,16 @@ export function fetchLetters(direction: LetterDirection) {
 
 export function reactToLetter(letterId: number, reaction: Exclude<LetterStatus, 'DELIVERED'>) {
   return apiSend<Letter>(`/api/letters/${letterId}/react?reaction=${reaction}`, 'PATCH');
+}
+
+export function decideLetter(letterId: number, decision: Exclude<SenderDecision, 'NONE'>) {
+  return apiSend<Letter>(`/api/letters/${letterId}/decide?decision=${decision}`, 'PATCH');
+}
+
+export function refineLetter(emotion: LetterEmotion, body: string, relationLabel?: string) {
+  return apiSend<{ drafts: string[] }>('/api/letters/refine', 'POST', {
+    emotion,
+    body,
+    relationLabel,
+  });
 }

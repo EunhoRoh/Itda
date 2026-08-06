@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sendLetter } from '@/api/letters';
+import { refineLetter, sendLetter } from '@/api/letters';
 import { fetchPeople, type Person } from '@/api/people';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -33,6 +33,22 @@ export default function NewLetterScreen() {
   const [senderName, setSenderName] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [refining, setRefining] = useState(false);
+  const [refinedDrafts, setRefinedDrafts] = useState<string[]>([]);
+
+  const refine = async () => {
+    if (!emotion || !customBody.trim() || refining) return;
+    setRefining(true);
+    setRefinedDrafts([]);
+    try {
+      const result = await refineLetter(emotion, customBody.trim());
+      setRefinedDrafts(result.drafts);
+    } catch (e) {
+      Alert.alert('다듬지 못했어요', e instanceof Error ? e.message : '잠시 후 다시 시도해 주세요');
+    } finally {
+      setRefining(false);
+    }
+  };
 
   useEffect(() => {
     fetchPeople()
@@ -271,25 +287,70 @@ export default function NewLetterScreen() {
               })}
 
               {!anonymous && (
-                <TextInput
-                  multiline
-                  value={customBody}
-                  onChangeText={(t) => {
-                    setCustomBody(t);
-                    if (t.trim()) setPresetBody(null);
-                  }}
-                  maxLength={500}
-                  placeholder="직접 쓸 수도 있어요. 구체적인 기억 하나면 충분해요."
-                  placeholderTextColor={theme.textSecondary}
-                  style={[
-                    styles.textarea,
-                    {
-                      color: theme.text,
-                      backgroundColor: theme.backgroundElement,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                />
+                <>
+                  <TextInput
+                    multiline
+                    value={customBody}
+                    onChangeText={(t) => {
+                      setCustomBody(t);
+                      if (t.trim()) setPresetBody(null);
+                      setRefinedDrafts([]);
+                    }}
+                    maxLength={500}
+                    placeholder="직접 쓸 수도 있어요. 구체적인 기억 하나면 충분해요."
+                    placeholderTextColor={theme.textSecondary}
+                    style={[
+                      styles.textarea,
+                      {
+                        color: theme.text,
+                        backgroundColor: theme.backgroundElement,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  />
+                  {!!customBody.trim() && (
+                    <Pressable
+                      onPress={refine}
+                      disabled={refining}
+                      style={({ pressed }) => [
+                        styles.refineBtn,
+                        { borderColor: theme.green },
+                        pressed && styles.pressed,
+                      ]}>
+                      <ThemedText type="smallBold" style={{ color: theme.green, fontSize: 13 }}>
+                        {refining ? '다듬는 중…' : '✨ 표현 다듬기 — 3가지 안 받아보기'}
+                      </ThemedText>
+                    </Pressable>
+                  )}
+                  {refinedDrafts.length > 0 && (
+                    <>
+                      <ThemedText type="small" themeColor="textSecondary" style={{ fontSize: 12 }}>
+                        마음은 그대로, 표현만 다듬었어요. 마음에 드는 안을 고르면 본문에 들어가요.
+                      </ThemedText>
+                      {refinedDrafts.map((draft, i) => (
+                        <Pressable
+                          key={i}
+                          onPress={() => {
+                            setCustomBody(draft);
+                            setRefinedDrafts([]);
+                          }}
+                          style={({ pressed }) => [
+                            styles.presetCard,
+                            {
+                              backgroundColor: theme.greenSoft,
+                              borderColor: theme.green,
+                              borderWidth: StyleSheet.hairlineWidth,
+                            },
+                            pressed && styles.pressed,
+                          ]}>
+                          <ThemedText type="small" style={{ lineHeight: 20 }}>
+                            {['담백하게', '따뜻하게', '정중하게'][i] ?? `안 ${i + 1}`} — {draft}
+                          </ThemedText>
+                        </Pressable>
+                      ))}
+                    </>
+                  )}
+                </>
               )}
 
               <Pressable
@@ -375,6 +436,12 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     padding: Spacing.three,
     fontSize: 15,
+  },
+  refineBtn: {
+    borderRadius: Radius.button,
+    borderWidth: 1.5,
+    paddingVertical: Spacing.two,
+    alignItems: 'center',
   },
   textarea: {
     borderRadius: Radius.button,
