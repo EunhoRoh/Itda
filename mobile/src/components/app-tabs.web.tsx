@@ -26,6 +26,9 @@ export default function AppTabs() {
           <TabTrigger name="people" href="/people" asChild>
             <TabButton>사람들</TabButton>
           </TabTrigger>
+          <TabTrigger name="letters" href="/letters" asChild>
+            <TabButton>마음함</TabButton>
+          </TabTrigger>
           <TabTrigger name="me" href="/me" asChild>
             <TabButton>나</TabButton>
           </TabTrigger>

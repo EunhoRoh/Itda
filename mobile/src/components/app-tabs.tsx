@@ -28,6 +28,14 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="letters">
+        <NativeTabs.Trigger.Label>마음함</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="me">
         <NativeTabs.Trigger.Label>나</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
