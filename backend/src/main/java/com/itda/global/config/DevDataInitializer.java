@@ -1,5 +1,9 @@
 package com.itda.global.config;
 
+import com.itda.domain.letter.Letter;
+import com.itda.domain.letter.LetterDirection;
+import com.itda.domain.letter.LetterEmotion;
+import com.itda.domain.letter.LetterRepository;
 import com.itda.domain.memory.EmotionTag;
 import com.itda.domain.memory.Memory;
 import com.itda.domain.memory.MemoryCategory;
@@ -25,6 +29,7 @@ public class DevDataInitializer implements CommandLineRunner {
 
     private final PersonRepository personRepository;
     private final MemoryRepository memoryRepository;
+    private final LetterRepository letterRepository;
 
     @Override
     public void run(String... args) {
@@ -67,6 +72,24 @@ public class DevDataInitializer implements CommandLineRunner {
                 .status(RelationStatus.CONNECTED)
                 .lastContactAt(LocalDate.of(2026, 7, 12))
                 .contactCycleDays(30)
+                .build());
+
+        // 마음함 데모 — 받은 마음 2통 (실서비스에선 다른 사용자의 발신)
+        letterRepository.save(Letter.builder()
+                .direction(LetterDirection.RECEIVED)
+                .anonymous(true)
+                .senderName("용감한 사자")
+                .emotion(LetterEmotion.GRATITUDE)
+                .body("힘들던 시기에 당신이 건넨 말 한마디가 오래 남아 있어요. 아마 기억 못 하실 수도 있지만, 그날 덕분에 버텼습니다. 고마웠어요.")
+                .preset(false)
+                .build());
+        letterRepository.save(Letter.builder()
+                .direction(LetterDirection.RECEIVED)
+                .anonymous(true)
+                .senderName("다정한 펭귄")
+                .emotion(LetterEmotion.RECONCILE)
+                .body("익명의 누군가가 당신과 오해를 풀고 싶어 해요.")
+                .preset(true)
                 .build());
     }
 }
